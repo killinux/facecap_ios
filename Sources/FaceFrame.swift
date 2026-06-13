@@ -16,13 +16,11 @@ struct FaceFrame {
     /// 3D 预览用的头部位移（相对基准点，由引擎填充），表现远近/平移。
     var previewPosition: SIMD3<Float> = .zero
 
-    /// 竖屏修正：ARKit 相机坐标系原生为横屏（landscape-right 基准），需绕视线轴 z
-    /// 旋转使竖屏正对相机时头部姿态为单位旋转（正立正脸）。
-    /// ⚠ 诊断基准：当前设为 0°（不修正），用来读出真机上的固有朝向，
-    ///   正确修正角 = 固有朝向的反向。确定后改下面的 angle：
-    ///     固有=正立 → 0；逆时针躺90° → -.pi/2；顺时针躺90° → +.pi/2；上下颠倒 → .pi。
+    /// 竖屏修正：ARKit 相机坐标系原生为横屏（landscape-right 基准，固有朝向为横躺 90°），
+    /// 绕视线轴 z 旋转 -90° 转正，使竖屏正对相机时头部姿态为单位旋转（正立正脸）。
+    /// 真机验证：0°→横躺、+90°→上下颠倒、-90°→正立。
     private static let portraitFix = simd_float4x4(
-        simd_quatf(angle: 0, axis: SIMD3(0, 0, 1)))
+        simd_quatf(angle: -.pi / 2, axis: SIMD3(0, 0, 1)))
 
     init(anchor: ARFaceAnchor, cameraTransform: simd_float4x4?, time: TimeInterval) {
         self.time = time
