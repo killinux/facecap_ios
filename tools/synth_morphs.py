@@ -42,7 +42,7 @@ MANAGED = [
 NATIVE_GAIN = {
     "eyeWide_L": 2.0, "eyeWide_R": 2.0,        # 1.8mm -> ~3.6mm（睁大眼，真机偏夸张再收）
     "mouthSmile_L": 1.8, "mouthSmile_R": 1.8,  # 3.3mm -> ~6mm（微笑嘴角）
-    "mouthStretch_L": 1.6, "mouthStretch_R": 1.6,  # 3.5 -> ~5.6
+    "mouthStretch_L": 1.2, "mouthStretch_R": 1.2,  # 3.5 -> ~4.2
     "mouthPucker": 1.5,                        # 4.0 -> ~6
     "browDown_L": 1.5, "browDown_R": 1.5,      # 3.4 -> ~5（皱眉）
     "browOuterUp_R": 1.4,                      # 6.3 -> ~8.8（补左右不对称）
@@ -109,9 +109,9 @@ def synth_all(P):
     # 上唇上提（露齿/讥笑）
     for nm, sgn in (("mouthUpperUp_L", +1.0), ("mouthUpperUp_R", -1.0)):
         c = np.array([0.014 * sgn, -0.038, 0.086])
-        w = _gauss(P, c, [0.016, 0.012, 0.020])
+        w = _gauss(P, c, [0.022, 0.018, 0.024])
         w[(P[:, 0] * sgn < -0.004) | (P[:, 1] < SEAM_Y) | (P[:, 1] > -0.028)] = 0
-        add(nm, _emit(P, w, [0.0, 1.0, 0.25], 0.006))
+        add(nm, _emit(P, w, [0.0, 1.0, 0.25], 0.0035))
 
     # 鼻翼上提（嫌恶）
     for nm, nostril, sgn in (("noseSneer_L", NOSTRIL_L, +1.0), ("noseSneer_R", NOSTRIL_R, -1.0)):
@@ -122,10 +122,10 @@ def synth_all(P):
     # 上唇/下唇向中缝聚拢（抿/耸）
     c = np.array([0.0, -0.036, 0.086])
     w = _gauss(P, c, [0.024, 0.012, 0.020]); w[P[:, 1] < SEAM_Y] = 0
-    add("mouthShrugUpper", _emit(P, w, [0.0, 1.0, 0.10], 0.0055))
+    add("mouthShrugUpper", _emit(P, w, [0.0, 1.0, 0.10], 0.003))
     c = np.array([0.0, -0.060, 0.080])
     w = _gauss(P, c, [0.024, 0.014, 0.020]); w[P[:, 1] > SEAM_Y] = 0
-    add("mouthShrugLower", _emit(P, w, [0.0, 1.0, 0.10], 0.0055))
+    add("mouthShrugLower", _emit(P, w, [0.0, 1.0, 0.10], 0.003))
 
     # 抿唇（嘴角向内收，唇变薄）
     for nm, corner, sgn in (("mouthPress_L", CORNER_L, +1.0), ("mouthPress_R", CORNER_R, -1.0)):
