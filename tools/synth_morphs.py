@@ -220,19 +220,9 @@ def synth_into_fch(path):
     meta = json.loads(d[8:8 + jlen])
     blob = bytearray(d[8 + jlen:])
     head = next(o for o in meta["objects"] if o["name"] == "Head")
-
-    # 幂等：移除上一次合成的舌头（顶点连续追加在尾部），还原纯脸部几何后再处理。
-    def _vec(ref, comp):
-        return np.frombuffer(bytes(blob), dtype="<f4", count=ref["count"],
-                             offset=ref["offset"]).reshape(-1, comp)
-    face_n = int(head.get("_faceVertexCount", head["vertexCount"]))
-    face_pos = _vec(head["positions"], 3)[:face_n].astype(np.float64)
-    face_nrm = _vec(head["normals"], 3)[:face_n].astype(np.float32).copy()
-    face_uv = _vec(head["uvs"], 2)[:face_n].astype(np.float32).copy()
-    head["submeshes"] = [s for s in head["submeshes"] if s["name"] != "Tongue"]
-    head["morphs"] = [m for m in head["morphs"] if m["name"] != "tongueOut"]
-    head["vertexCount"] = face_n
-    P = face_pos
+    P = np.frombuffer(bytes(blob), dtype="<f4",
+                      count=head["positions"]["count"],
+                      offset=head["positions"]["offset"]).reshape(-1, 3).astype(np.float64)
 
     # 幂等：去掉本脚本管理的旧 morph（按名）
     head["morphs"] = [m for m in head["morphs"] if m["name"] not in MANAGED]
@@ -263,28 +253,6 @@ def synth_into_fch(path):
         })
         mm = float(np.linalg.norm(delta, axis=1).max())
         print(f"  + {name:16} verts={len(idx):6d} maxmm={mm*1000:.1f}")
-
-    # 加舌头几何（新顶点追加在脸部之后）+ tongueOut morph（舌头前伸下垂伸出嘴外）
-    Vt, Nt, UVt, Ft, ut = make_tongue()
-    base = int(head["vertexCount"])
-    head["positions"] = {"_data": np.vstack([face_pos, Vt]).astype(np.float32)}
-    head["normals"] = {"_data": np.vstack([face_nrm, Nt]).astype(np.float32)}
-    head["uvs"] = {"_data": np.vstack([face_uv, UVt]).astype(np.float32)}
-    head["vertexCount"] = base + len(Vt)
-    head["_faceVertexCount"] = base
-    head["submeshes"].append({
-        "name": "Tongue", "texture": None, "transparent": False,
-        "indices": {"_data": (Ft + base).astype(np.uint32).ravel()},
-    })
-    tdir = np.array([0.0, -0.020, 0.033])    # 前伸 +z、下垂 -y
-    tdelta = (0.15 + 0.85 * ut[:, None] ** 1.3) * tdir
-    head["morphs"].append({
-        "name": "tongueOut",
-        "vertexIndices": {"_data": (base + np.arange(len(Vt))).astype(np.uint32)},
-        "deltas": {"_data": tdelta.astype(np.float32)},
-    })
-    print(f"  + tongueOut        舌头顶点={len(Vt)} "
-          f"伸出={float(np.linalg.norm(tdelta,axis=1).max())*1000:.1f}mm")
 
     # 重新打包 blob：只保留被引用的缓冲区（清掉历次替换留下的孤儿字节），
     # 新合成的 morph 用 {"_data": ndarray} 占位，旧引用从原 blob 取数据。

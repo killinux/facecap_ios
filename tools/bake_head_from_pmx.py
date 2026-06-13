@@ -163,6 +163,30 @@ for arkit, src, mode in MAPPING:
         w = np.clip(0.5 + basis[:, 0] * sign / (2 * FALLOFF), 0, 1)[:, None]
         morphs_out[arkit] = d * w
 
+# tongueOut：模型自带真舌头（Tongue 1~4 舌骨）。按舌骨顶点权重让舌头前伸下垂，
+# 权重渐变天然实现舌根固定、舌尖伸出最多。Blender 坐标：前伸=-Y、下垂=-Z。
+tong_groups = {}
+for g in mesh_obj.vertex_groups:
+    if "tong" in g.name.lower() or "舌" in g.name:
+        num = next((int(ch) for ch in reversed(g.name) if ch.isdigit()), 2)
+        tong_groups[g.index] = num  # 1=舌根 … 4=舌尖
+if tong_groups:
+    tdir = np.array([0.0, -0.050, -0.018])  # Blender 前伸(-Y)+下垂(-Z)；Blender 验证舌尖伸出唇外
+    tdelta = np.zeros((n_verts, 3))
+    for v in mesh_obj.data.vertices:
+        f = 0.0
+        for gv in v.groups:
+            if gv.group in tong_groups:
+                num = tong_groups[gv.group]
+                f += gv.weight * (0.15 + 0.85 * (num - 1) / 3.0)  # 舌尖伸更多
+        if f > 0.01:
+            tdelta[v.index] = min(f, 1.0) * tdir
+    morphs_out["tongueOut"] = tdelta
+    print("TONGUE groups:", sorted(tong_groups.items()),
+          "verts:", int((np.linalg.norm(tdelta, axis=1) > 1e-6).sum()))
+else:
+    print("TONGUE: no tongue vertex groups found")
+
 print("MORPH CHANNELS:", sorted(morphs_out.keys()))
 
 # ---- 选择头部顶点（材质过滤 + 高度过滤）----
