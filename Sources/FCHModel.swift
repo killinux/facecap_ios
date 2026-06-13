@@ -215,6 +215,13 @@ enum FCHModel {
         material.metalness.contents = 0.0
         material.isDoubleSided = true
 
+        // 合成舌头：无纹理，给湿润粉色
+        if submesh.name == "Tongue" {
+            material.diffuse.contents = UIColor(red: 0.84, green: 0.42, blue: 0.45, alpha: 1)
+            material.roughness.contents = 0.55
+            return material
+        }
+
         var transparent = submesh.transparent
         if var name = submesh.texture {
             // 优先用同名 .png（带 alpha 通道，如睫毛/眉毛/头发）
