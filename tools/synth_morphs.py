@@ -37,6 +37,17 @@ MANAGED = [
     "mouthClose", "mouthRollUpper", "mouthRollLower",
 ]
 
+# 原生（烘焙）morph 的增益：MMD 骨骼形变量小，几个关键通道在预览里太弱。
+# 目标是把权重=1 时的峰值提到 ~8-11mm（参考 jawOpen 12、eyeBlink 17）。
+NATIVE_GAIN = {
+    "eyeWide_L": 5.0, "eyeWide_R": 5.0,        # 1.8mm -> ~9mm（睁大眼）
+    "mouthSmile_L": 2.7, "mouthSmile_R": 2.7,  # 3.3mm -> ~9mm（微笑嘴角）
+    "mouthStretch_L": 2.3, "mouthStretch_R": 2.3,  # 3.5 -> ~8
+    "mouthPucker": 2.2,                        # 4.0 -> ~9
+    "browDown_L": 2.0, "browDown_R": 2.0,      # 3.4 -> ~7（皱眉）
+    "browOuterUp_R": 1.7,                      # 6.3 -> ~11（补左右不对称，L 已 11.3）
+}
+
 
 def _unit(v):
     v = np.asarray(v, float)
@@ -76,7 +87,7 @@ def synth_all(P):
         w = _gauss(P, c, [0.027, 0.028, 0.038])
         w[(P[:, 0] * sgn < 0.010) | (P[:, 1] > eye[1] + 0.006) | (P[:, 1] < -0.062)
           | (P[:, 0] * sgn > 0.075)] = 0
-        add(nm, _emit(P, w, [-0.12 * sgn, 1.0, 0.40], 0.0065, front_z=0.015))
+        add(nm, _emit(P, w, [-0.12 * sgn, 1.0, 0.40], 0.010, front_z=0.015))
 
     # 鼓腮：两颊向外+向前鼓出（单通道，左右同时）
     wsum = np.zeros(len(P))
@@ -87,64 +98,64 @@ def synth_all(P):
         w[(P[:, 0] * sgn < 0.018) | (P[:, 2] < 0.02)] = 0
         wsum = np.maximum(wsum, w)
         dirs[w > 0] = _unit([1.0 * sgn, 0.0, 0.7])
-    add("cheekPuff", _emit(P, wsum, dirs, 0.007, front_z=0.02))
+    add("cheekPuff", _emit(P, wsum, dirs, 0.011, front_z=0.02))
 
     # 嘴角下拉（皱眉/撇嘴）——替换错误的「激怒」映射：嘴角向下+略外
     for nm, corner, sgn in (("mouthFrown_L", CORNER_L, +1.0), ("mouthFrown_R", CORNER_R, -1.0)):
         w = _gauss(P, corner, [0.020, 0.022, 0.024])
         w[(P[:, 0] * sgn < 0.006) | (P[:, 1] > -0.032)] = 0
-        add(nm, _emit(P, w, [0.10 * sgn, -1.0, 0.0], 0.0055))
+        add(nm, _emit(P, w, [0.10 * sgn, -1.0, 0.0], 0.009))
 
     # 上唇上提（露齿/讥笑）
     for nm, sgn in (("mouthUpperUp_L", +1.0), ("mouthUpperUp_R", -1.0)):
         c = np.array([0.014 * sgn, -0.038, 0.086])
         w = _gauss(P, c, [0.016, 0.012, 0.020])
         w[(P[:, 0] * sgn < -0.004) | (P[:, 1] < SEAM_Y) | (P[:, 1] > -0.028)] = 0
-        add(nm, _emit(P, w, [0.0, 1.0, 0.25], 0.004))
+        add(nm, _emit(P, w, [0.0, 1.0, 0.25], 0.008))
 
     # 鼻翼上提（嫌恶）
     for nm, nostril, sgn in (("noseSneer_L", NOSTRIL_L, +1.0), ("noseSneer_R", NOSTRIL_R, -1.0)):
         w = _gauss(P, nostril, [0.012, 0.014, 0.014])
         w[(P[:, 0] * sgn < 0.002) | (P[:, 1] < -0.035)] = 0
-        add(nm, _emit(P, w, [0.0, 1.0, 0.10], 0.0035))
+        add(nm, _emit(P, w, [0.0, 1.0, 0.10], 0.0075))
 
     # 上唇/下唇向中缝聚拢（抿/耸）
     c = np.array([0.0, -0.036, 0.086])
     w = _gauss(P, c, [0.024, 0.012, 0.020]); w[P[:, 1] < SEAM_Y] = 0
-    add("mouthShrugUpper", _emit(P, w, [0.0, 1.0, 0.10], 0.004))
+    add("mouthShrugUpper", _emit(P, w, [0.0, 1.0, 0.10], 0.007))
     c = np.array([0.0, -0.060, 0.080])
     w = _gauss(P, c, [0.024, 0.014, 0.020]); w[P[:, 1] > SEAM_Y] = 0
-    add("mouthShrugLower", _emit(P, w, [0.0, 1.0, 0.10], 0.004))
+    add("mouthShrugLower", _emit(P, w, [0.0, 1.0, 0.10], 0.007))
 
     # 抿唇（嘴角向内收，唇变薄）
     for nm, corner, sgn in (("mouthPress_L", CORNER_L, +1.0), ("mouthPress_R", CORNER_R, -1.0)):
         w = _gauss(P, corner, [0.018, 0.016, 0.020])
         w[P[:, 0] * sgn < 0.006] = 0
-        add(nm, _emit(P, w, [-1.0 * sgn, 0.0, 0.0], 0.0028))
+        add(nm, _emit(P, w, [-1.0 * sgn, 0.0, 0.0], 0.005))
 
     # 酒窝（嘴角向后+略内）
     for nm, corner, sgn in (("mouthDimple_L", CORNER_L, +1.0), ("mouthDimple_R", CORNER_R, -1.0)):
         w = _gauss(P, corner, [0.018, 0.018, 0.020])
         w[P[:, 0] * sgn < 0.010] = 0
-        add(nm, _emit(P, w, [-0.3 * sgn, 0.15, -1.0], 0.003))
+        add(nm, _emit(P, w, [-0.3 * sgn, 0.15, -1.0], 0.005))
 
     # 嘴整体左右移
     w = _gauss(P, MOUTH_C, [0.030, 0.020, 0.030]); w[P[:, 1] > -0.028] = 0
-    add("mouthLeft", _emit(P, w, [1.0, 0.0, 0.0], 0.004))
-    add("mouthRight", _emit(P, w, [-1.0, 0.0, 0.0], 0.004))
+    add("mouthLeft", _emit(P, w, [1.0, 0.0, 0.0], 0.007))
+    add("mouthRight", _emit(P, w, [-1.0, 0.0, 0.0], 0.007))
 
     # 下巴左右移 / 前伸（下半脸）
     w = _gauss(P, JAW_C, [0.032, 0.030, 0.030]); w[P[:, 1] > -0.050] = 0
-    add("jawLeft", _emit(P, w, [1.0, 0.0, 0.0], 0.005))
-    add("jawRight", _emit(P, w, [-1.0, 0.0, 0.0], 0.005))
-    add("jawForward", _emit(P, w, [0.0, 0.0, 1.0], 0.005))
+    add("jawLeft", _emit(P, w, [1.0, 0.0, 0.0], 0.0085))
+    add("jawRight", _emit(P, w, [-1.0, 0.0, 0.0], 0.0085))
+    add("jawForward", _emit(P, w, [0.0, 0.0, 1.0], 0.0085))
 
     # 闭唇（张口时合上）：上唇下压、下唇上抬向缝靠拢
     w = _gauss(P, np.array([0.0, -0.040, 0.085]), [0.026, 0.012, 0.022]); w[P[:, 1] < SEAM_Y] = 0
-    add("mouthClose", _emit(P, w, [0.0, -1.0, 0.0], 0.003))
+    add("mouthClose", _emit(P, w, [0.0, -1.0, 0.0], 0.005))
     # 下唇部分单独叠加为同名 morph：合成时合并
     wl = _gauss(P, np.array([0.0, -0.058, 0.082]), [0.026, 0.012, 0.022]); wl[P[:, 1] > SEAM_Y] = 0
-    low = _emit(P, wl, [0.0, 1.0, 0.0], 0.003)
+    low = _emit(P, wl, [0.0, 1.0, 0.0], 0.005)
     if low is not None and "mouthClose" in out:
         out["mouthClose"] = _merge(out["mouthClose"], low, len(P))
     elif low is not None:
@@ -152,9 +163,9 @@ def synth_all(P):
 
     # 卷唇（唇缘向口内卷：后+朝缝）
     w = _gauss(P, np.array([0.0, -0.040, 0.086]), [0.024, 0.012, 0.018]); w[P[:, 1] < SEAM_Y] = 0
-    add("mouthRollUpper", _emit(P, w, [0.0, -0.3, -1.0], 0.003))
+    add("mouthRollUpper", _emit(P, w, [0.0, -0.3, -1.0], 0.005))
     w = _gauss(P, np.array([0.0, -0.058, 0.082]), [0.024, 0.012, 0.018]); w[P[:, 1] > SEAM_Y] = 0
-    add("mouthRollLower", _emit(P, w, [0.0, 0.3, -1.0], 0.003))
+    add("mouthRollLower", _emit(P, w, [0.0, 0.3, -1.0], 0.005))
 
     return out
 
@@ -181,6 +192,20 @@ def synth_into_fch(path):
 
     # 幂等：去掉本脚本管理的旧 morph（按名）
     head["morphs"] = [m for m in head["morphs"] if m["name"] not in MANAGED]
+
+    # 烘焙出的原生 morph 位移偏小（MMD 骨骼形变量本就小），预览里几乎看不出来。
+    # 对这些通道按增益放大 delta，提到 jawOpen/eyeBlink 同量级。用 _gained 标记，
+    # 重复运行不叠加（幂等）。
+    for m in head["morphs"]:
+        g = NATIVE_GAIN.get(m["name"])
+        if g and not m.get("_gained"):
+            r = m["deltas"]
+            arr = np.frombuffer(bytes(blob), dtype="<f4",
+                                count=r["count"], offset=r["offset"]).copy()
+            m["deltas"] = {"_data": (arr * g).astype(np.float32)}
+            m["_gained"] = True
+            print(f"  * {m['name']:16} gain x{g}  -> maxmm "
+                  f"{float(np.linalg.norm(arr.reshape(-1,3)*g,axis=1).max())*1000:.1f}")
 
     synth = synth_all(P)
     for name in MANAGED:
