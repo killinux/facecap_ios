@@ -40,7 +40,7 @@ MANAGED = [
 # 原生（烘焙）morph 的温和增益：MMD 骨骼形变量小，几个关键通道在预览里偏弱。
 # 中间档——比保守原值明显，但不夸张（目标峰值约 5-9mm）。
 NATIVE_GAIN = {
-    "eyeWide_L": 2.8, "eyeWide_R": 2.8,        # 1.8mm -> ~5mm（睁大眼）
+    "eyeWide_L": 2.0, "eyeWide_R": 2.0,        # 1.8mm -> ~3.6mm（睁大眼，真机偏夸张再收）
     "mouthSmile_L": 1.8, "mouthSmile_R": 1.8,  # 3.3mm -> ~6mm（微笑嘴角）
     "mouthStretch_L": 1.6, "mouthStretch_R": 1.6,  # 3.5 -> ~5.6
     "mouthPucker": 1.5,                        # 4.0 -> ~6
@@ -193,17 +193,20 @@ def synth_into_fch(path):
     # 幂等：去掉本脚本管理的旧 morph（按名）
     head["morphs"] = [m for m in head["morphs"] if m["name"] not in MANAGED]
 
-    # 原生 morph 温和增益（带 _gained 标记，重复运行不叠加）
+    # 原生 morph 温和增益。_gain 记录「当前 delta 已含的增益倍数」，重复运行幂等；
+    # 改了 NATIVE_GAIN 后再跑会按 目标/已应用 的比例修正，不必从 pristine 重来。
     for m in head["morphs"]:
-        g = NATIVE_GAIN.get(m["name"])
-        if g and not m.get("_gained"):
+        target = float(NATIVE_GAIN.get(m["name"], 1.0))
+        applied = float(m.get("_gain", 1.0))
+        if abs(target - applied) > 1e-9:
             r = m["deltas"]
             arr = np.frombuffer(bytes(blob), dtype="<f4",
                                 count=r["count"], offset=r["offset"]).copy()
-            m["deltas"] = {"_data": (arr * g).astype(np.float32)}
-            m["_gained"] = True
-            print(f"  * {m['name']:16} gain x{g}  -> maxmm "
-                  f"{float(np.linalg.norm(arr.reshape(-1,3)*g,axis=1).max())*1000:.1f}")
+            factor = target / applied
+            m["deltas"] = {"_data": (arr * factor).astype(np.float32)}
+            m["_gain"] = target
+            print(f"  * {m['name']:16} gain {applied:.2f}->{target:.2f}  -> maxmm "
+                  f"{float(np.linalg.norm(arr.reshape(-1,3)*factor,axis=1).max())*1000:.1f}")
 
     synth = synth_all(P)
     for name in MANAGED:
