@@ -1,0 +1,33 @@
+name: FaceCapStreamer
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+targets:
+  FaceCapStreamer:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+      - path: Resources
+        buildPhase: resources
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.9"
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: false
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: FaceCap Streamer
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIRequiredDeviceCapabilities:
+          - arkit
+        NSCameraUsageDescription: 需要使用前置深度相机进行面部表情捕捉
+        NSLocalNetworkUsageDescription: 需要通过本地网络（UDP/OSC）将面捕数据发送到 Blender（Faceit）
+        ITSAppUsesNonExemptEncryption: false

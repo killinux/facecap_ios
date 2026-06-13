@@ -1,0 +1,392 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		019E0C316D64A09D677182CB /* PC0002_00_Eye_C.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 28EE0C3D99FE3E00DC44342D /* PC0002_00_Eye_C.jpg */; };
+		0FA994117009BF40B319D36F /* FaceFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A806F3D1FAD29D216A21A9F /* FaceFrame.swift */; };
+		0FE2C93F01AACEBD962C893D /* OSCEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04E29DA075D4640F3FD57D9 /* OSCEncoder.swift */; };
+		18AB90A49C88C4963B4C306A /* Common_LightMouth_Player_C.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 7FAEBCE85F831227D01ABAB5 /* Common_LightMouth_Player_C.jpg */; };
+		34D71AC7CCD15A67EF85CD1D /* UDPSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4081DB40B6952BDA7F0D5D30 /* UDPSender.swift */; };
+		400E9B4899F4059BFE64ADAE /* Tifa Head D_AO.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 16652EB29298B6C06AC83545 /* Tifa Head D_AO.jpg */; };
+		4C62CAC97387E56C0BF26F6B /* Tifa Torso D_AO.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 09F99F1EA5C589096BE34B6D /* Tifa Torso D_AO.jpg */; };
+		7A9E4410CBAAF51AD8847A1A /* PC0002_00_Hair_C.png in Resources */ = {isa = PBXBuildFile; fileRef = 8203589CEFBCD09AB04E1D5A /* PC0002_00_Hair_C.png */; };
+		898B4AF84B23B9279568D0B7 /* FaceCaptureEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECA32067AA5B046D9DA2A2D /* FaceCaptureEngine.swift */; };
+		959BB65A823CE0F59F321E87 /* FCHModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79154CCE5451C875CEC2608B /* FCHModel.swift */; };
+		9886FB3C0EF4E9E91E05E04C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3328822411E65766D0C4C38 /* SettingsView.swift */; };
+		9ABF5099E9179D02F4B2FF1C /* Torso_D.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 5FDC4540434BADF901EA2A7E /* Torso_D.jpg */; };
+		BE1EC5D42759AC6DF58A51B8 /* Face_D.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 39B877D968FF9525C67D3C2A /* Face_D.jpg */; };
+		C10A6578C5F0AA81E060677D /* PC0002_00_Hair_C.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 45B3183E9CC12DF085041FB7 /* PC0002_00_Hair_C.jpg */; };
+		C2A53F4EE995CCCE51712171 /* head.fch in Resources */ = {isa = PBXBuildFile; fileRef = 847BA9DD31CC5603EFF5D427 /* head.fch */; };
+		C898647122FFE6CB11803668 /* G8FBaseMouthMapD_1005.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F89162311FBE70E6E0B5B263 /* G8FBaseMouthMapD_1005.jpg */; };
+		D0D2EEE886A52F08C7CA9F39 /* FaceCapProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38ADB8FF45D62CA86CDFB39D /* FaceCapProtocol.swift */; };
+		E96AE22D2E0FC30E4991E9AD /* FaceCapStreamerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7705CD9281312B82CC29A30A /* FaceCapStreamerApp.swift */; };
+		EFB956685A6E9B94964BB50D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A517775DCB157A754557A4 /* ContentView.swift */; };
+		FDFD48A492B774F143665F57 /* Tifa_Hair_D.png in Resources */ = {isa = PBXBuildFile; fileRef = 90F548F8C2BB5B1C6042375E /* Tifa_Hair_D.png */; };
+		FE04244ACB6267E9E8767534 /* HeadPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E146977294AFC1715E101E1 /* HeadPreviewView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		09F99F1EA5C589096BE34B6D /* Tifa Torso D_AO.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "Tifa Torso D_AO.jpg"; sourceTree = "<group>"; };
+		16652EB29298B6C06AC83545 /* Tifa Head D_AO.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "Tifa Head D_AO.jpg"; sourceTree = "<group>"; };
+		1E146977294AFC1715E101E1 /* HeadPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadPreviewView.swift; sourceTree = "<group>"; };
+		28EE0C3D99FE3E00DC44342D /* PC0002_00_Eye_C.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = PC0002_00_Eye_C.jpg; sourceTree = "<group>"; };
+		37A517775DCB157A754557A4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		38ADB8FF45D62CA86CDFB39D /* FaceCapProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceCapProtocol.swift; sourceTree = "<group>"; };
+		39B877D968FF9525C67D3C2A /* Face_D.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Face_D.jpg; sourceTree = "<group>"; };
+		3E832538A4ABF25E53F4587D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4081DB40B6952BDA7F0D5D30 /* UDPSender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UDPSender.swift; sourceTree = "<group>"; };
+		45B3183E9CC12DF085041FB7 /* PC0002_00_Hair_C.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = PC0002_00_Hair_C.jpg; sourceTree = "<group>"; };
+		5FDC4540434BADF901EA2A7E /* Torso_D.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Torso_D.jpg; sourceTree = "<group>"; };
+		7705CD9281312B82CC29A30A /* FaceCapStreamerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceCapStreamerApp.swift; sourceTree = "<group>"; };
+		79154CCE5451C875CEC2608B /* FCHModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FCHModel.swift; sourceTree = "<group>"; };
+		7FAEBCE85F831227D01ABAB5 /* Common_LightMouth_Player_C.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Common_LightMouth_Player_C.jpg; sourceTree = "<group>"; };
+		8203589CEFBCD09AB04E1D5A /* PC0002_00_Hair_C.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PC0002_00_Hair_C.png; sourceTree = "<group>"; };
+		847BA9DD31CC5603EFF5D427 /* head.fch */ = {isa = PBXFileReference; lastKnownFileType = file; path = head.fch; sourceTree = "<group>"; };
+		84B244E9738BA8660F07EC5D /* FaceCapStreamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FaceCapStreamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		90F548F8C2BB5B1C6042375E /* Tifa_Hair_D.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tifa_Hair_D.png; sourceTree = "<group>"; };
+		9A806F3D1FAD29D216A21A9F /* FaceFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceFrame.swift; sourceTree = "<group>"; };
+		B04E29DA075D4640F3FD57D9 /* OSCEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSCEncoder.swift; sourceTree = "<group>"; };
+		E3328822411E65766D0C4C38 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F89162311FBE70E6E0B5B263 /* G8FBaseMouthMapD_1005.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = G8FBaseMouthMapD_1005.jpg; sourceTree = "<group>"; };
+		FECA32067AA5B046D9DA2A2D /* FaceCaptureEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceCaptureEngine.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		68CF4F4E126C4F66998DF6F5 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				7FAEBCE85F831227D01ABAB5 /* Common_LightMouth_Player_C.jpg */,
+				39B877D968FF9525C67D3C2A /* Face_D.jpg */,
+				F89162311FBE70E6E0B5B263 /* G8FBaseMouthMapD_1005.jpg */,
+				847BA9DD31CC5603EFF5D427 /* head.fch */,
+				28EE0C3D99FE3E00DC44342D /* PC0002_00_Eye_C.jpg */,
+				45B3183E9CC12DF085041FB7 /* PC0002_00_Hair_C.jpg */,
+				8203589CEFBCD09AB04E1D5A /* PC0002_00_Hair_C.png */,
+				16652EB29298B6C06AC83545 /* Tifa Head D_AO.jpg */,
+				09F99F1EA5C589096BE34B6D /* Tifa Torso D_AO.jpg */,
+				90F548F8C2BB5B1C6042375E /* Tifa_Hair_D.png */,
+				5FDC4540434BADF901EA2A7E /* Torso_D.jpg */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		7D88A30D08A085D851F92EEA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				84B244E9738BA8660F07EC5D /* FaceCapStreamer.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		93E53C3FD27A69119174F790 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				37A517775DCB157A754557A4 /* ContentView.swift */,
+				38ADB8FF45D62CA86CDFB39D /* FaceCapProtocol.swift */,
+				7705CD9281312B82CC29A30A /* FaceCapStreamerApp.swift */,
+				FECA32067AA5B046D9DA2A2D /* FaceCaptureEngine.swift */,
+				9A806F3D1FAD29D216A21A9F /* FaceFrame.swift */,
+				79154CCE5451C875CEC2608B /* FCHModel.swift */,
+				1E146977294AFC1715E101E1 /* HeadPreviewView.swift */,
+				3E832538A4ABF25E53F4587D /* Info.plist */,
+				B04E29DA075D4640F3FD57D9 /* OSCEncoder.swift */,
+				E3328822411E65766D0C4C38 /* SettingsView.swift */,
+				4081DB40B6952BDA7F0D5D30 /* UDPSender.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		9E0D6440E51C9C0C3BF26C35 = {
+			isa = PBXGroup;
+			children = (
+				68CF4F4E126C4F66998DF6F5 /* Resources */,
+				93E53C3FD27A69119174F790 /* Sources */,
+				7D88A30D08A085D851F92EEA /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8BB7F7800A5041B4147A2139 /* FaceCapStreamer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6921B3C35CA198AD51FC80EA /* Build configuration list for PBXNativeTarget "FaceCapStreamer" */;
+			buildPhases = (
+				AC875ABBF05EAB4C7EB0709F /* Sources */,
+				122A319006C5E08E45468B59 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FaceCapStreamer;
+			packageProductDependencies = (
+			);
+			productName = FaceCapStreamer;
+			productReference = 84B244E9738BA8660F07EC5D /* FaceCapStreamer.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		52E641695014D0D4BF3F6CE2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					8BB7F7800A5041B4147A2139 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 863204836524B4305B1D8C2F /* Build configuration list for PBXProject "FaceCapStreamer" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 9E0D6440E51C9C0C3BF26C35;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 7D88A30D08A085D851F92EEA /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8BB7F7800A5041B4147A2139 /* FaceCapStreamer */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		122A319006C5E08E45468B59 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				18AB90A49C88C4963B4C306A /* Common_LightMouth_Player_C.jpg in Resources */,
+				BE1EC5D42759AC6DF58A51B8 /* Face_D.jpg in Resources */,
+				C898647122FFE6CB11803668 /* G8FBaseMouthMapD_1005.jpg in Resources */,
+				019E0C316D64A09D677182CB /* PC0002_00_Eye_C.jpg in Resources */,
+				C10A6578C5F0AA81E060677D /* PC0002_00_Hair_C.jpg in Resources */,
+				7A9E4410CBAAF51AD8847A1A /* PC0002_00_Hair_C.png in Resources */,
+				400E9B4899F4059BFE64ADAE /* Tifa Head D_AO.jpg in Resources */,
+				4C62CAC97387E56C0BF26F6B /* Tifa Torso D_AO.jpg in Resources */,
+				FDFD48A492B774F143665F57 /* Tifa_Hair_D.png in Resources */,
+				9ABF5099E9179D02F4B2FF1C /* Torso_D.jpg in Resources */,
+				C2A53F4EE995CCCE51712171 /* head.fch in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AC875ABBF05EAB4C7EB0709F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EFB956685A6E9B94964BB50D /* ContentView.swift in Sources */,
+				959BB65A823CE0F59F321E87 /* FCHModel.swift in Sources */,
+				D0D2EEE886A52F08C7CA9F39 /* FaceCapProtocol.swift in Sources */,
+				E96AE22D2E0FC30E4991E9AD /* FaceCapStreamerApp.swift in Sources */,
+				898B4AF84B23B9279568D0B7 /* FaceCaptureEngine.swift in Sources */,
+				0FA994117009BF40B319D36F /* FaceFrame.swift in Sources */,
+				FE04244ACB6267E9E8767534 /* HeadPreviewView.swift in Sources */,
+				0FE2C93F01AACEBD962C893D /* OSCEncoder.swift in Sources */,
+				9886FB3C0EF4E9E91E05E04C /* SettingsView.swift in Sources */,
+				34D71AC7CCD15A67EF85CD1D /* UDPSender.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1A1BCABA5A2276C82B7E344E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		1CC3F8B603F5E63A2B4A1AEC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L4VM8S6JNH;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.FaceCapStreamer;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		87948230BADED744055908B2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F05D4191E03377A369187AC1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L4VM8S6JNH;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.FaceCapStreamer;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6921B3C35CA198AD51FC80EA /* Build configuration list for PBXNativeTarget "FaceCapStreamer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1CC3F8B603F5E63A2B4A1AEC /* Debug */,
+				F05D4191E03377A369187AC1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		863204836524B4305B1D8C2F /* Build configuration list for PBXProject "FaceCapStreamer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				87948230BADED744055908B2 /* Debug */,
+				1A1BCABA5A2276C82B7E344E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 52E641695014D0D4BF3F6CE2 /* Project object */;
+}
