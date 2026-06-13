@@ -171,7 +171,7 @@ for g in mesh_obj.vertex_groups:
         num = next((int(ch) for ch in reversed(g.name) if ch.isdigit()), 2)
         tong_groups[g.index] = num  # 1=舌根 … 4=舌尖
 if tong_groups:
-    tdir = np.array([0.0, -0.050, -0.018])  # Blender 前伸(-Y)+下垂(-Z)；Blender 验证舌尖伸出唇外
+    tdir = np.array([0.0, -0.045, -0.006])  # Blender 前伸(-Y)+略下垂(-Z)；近水平从唇缝伸出，少穿下唇
     tdelta = np.zeros((n_verts, 3))
     for v in mesh_obj.data.vertices:
         f = 0.0

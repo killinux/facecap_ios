@@ -214,6 +214,10 @@ enum FCHModel {
         material.roughness.contents = 0.85
         material.metalness.contents = 0.0
         material.isDoubleSided = true
+        // 口腔/舌头用 Genesis 8 的 UDIM 平铺 UV（u 可达 4~5，tile 1005）。SceneKit 默认
+        // clamp 会把 u 钳到 1.0 采到纹理黑边导致发黑；用 repeat 让 u 取小数部分映回 tile。
+        material.diffuse.wrapS = .repeat
+        material.diffuse.wrapT = .repeat
 
         var transparent = submesh.transparent
         if var name = submesh.texture {
