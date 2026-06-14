@@ -7,52 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		019E0C316D64A09D677182CB /* PC0002_00_Eye_C.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 28EE0C3D99FE3E00DC44342D /* PC0002_00_Eye_C.jpg */; };
 		0FA994117009BF40B319D36F /* FaceFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A806F3D1FAD29D216A21A9F /* FaceFrame.swift */; };
 		0FE2C93F01AACEBD962C893D /* OSCEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04E29DA075D4640F3FD57D9 /* OSCEncoder.swift */; };
-		18AB90A49C88C4963B4C306A /* Common_LightMouth_Player_C.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 7FAEBCE85F831227D01ABAB5 /* Common_LightMouth_Player_C.jpg */; };
 		34D71AC7CCD15A67EF85CD1D /* UDPSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4081DB40B6952BDA7F0D5D30 /* UDPSender.swift */; };
-		400E9B4899F4059BFE64ADAE /* Tifa Head D_AO.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 16652EB29298B6C06AC83545 /* Tifa Head D_AO.jpg */; };
-		4C62CAC97387E56C0BF26F6B /* Tifa Torso D_AO.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 09F99F1EA5C589096BE34B6D /* Tifa Torso D_AO.jpg */; };
-		7A9E4410CBAAF51AD8847A1A /* PC0002_00_Hair_C.png in Resources */ = {isa = PBXBuildFile; fileRef = 8203589CEFBCD09AB04E1D5A /* PC0002_00_Hair_C.png */; };
 		898B4AF84B23B9279568D0B7 /* FaceCaptureEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECA32067AA5B046D9DA2A2D /* FaceCaptureEngine.swift */; };
 		959BB65A823CE0F59F321E87 /* FCHModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79154CCE5451C875CEC2608B /* FCHModel.swift */; };
 		9886FB3C0EF4E9E91E05E04C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3328822411E65766D0C4C38 /* SettingsView.swift */; };
-		9ABF5099E9179D02F4B2FF1C /* Torso_D.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 5FDC4540434BADF901EA2A7E /* Torso_D.jpg */; };
-		BE1EC5D42759AC6DF58A51B8 /* Face_D.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 39B877D968FF9525C67D3C2A /* Face_D.jpg */; };
-		C10A6578C5F0AA81E060677D /* PC0002_00_Hair_C.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 45B3183E9CC12DF085041FB7 /* PC0002_00_Hair_C.jpg */; };
-		C2A53F4EE995CCCE51712171 /* head.fch in Resources */ = {isa = PBXBuildFile; fileRef = 847BA9DD31CC5603EFF5D427 /* head.fch */; };
-		C898647122FFE6CB11803668 /* G8FBaseMouthMapD_1005.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F89162311FBE70E6E0B5B263 /* G8FBaseMouthMapD_1005.jpg */; };
+		B1B7540D106CD50A513750C5 /* heads in Resources */ = {isa = PBXBuildFile; fileRef = 1519431FFE4867675EDA6C0C /* heads */; };
+		BB9FA4FF3C5844C6960F8F50 /* HeadCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CD384695138D4AC33C498D /* HeadCatalog.swift */; };
 		D0D2EEE886A52F08C7CA9F39 /* FaceCapProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38ADB8FF45D62CA86CDFB39D /* FaceCapProtocol.swift */; };
 		E96AE22D2E0FC30E4991E9AD /* FaceCapStreamerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7705CD9281312B82CC29A30A /* FaceCapStreamerApp.swift */; };
 		EFB956685A6E9B94964BB50D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A517775DCB157A754557A4 /* ContentView.swift */; };
-		FDFD48A492B774F143665F57 /* Tifa_Hair_D.png in Resources */ = {isa = PBXBuildFile; fileRef = 90F548F8C2BB5B1C6042375E /* Tifa_Hair_D.png */; };
 		FE04244ACB6267E9E8767534 /* HeadPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E146977294AFC1715E101E1 /* HeadPreviewView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		09F99F1EA5C589096BE34B6D /* Tifa Torso D_AO.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "Tifa Torso D_AO.jpg"; sourceTree = "<group>"; };
-		16652EB29298B6C06AC83545 /* Tifa Head D_AO.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "Tifa Head D_AO.jpg"; sourceTree = "<group>"; };
+		1519431FFE4867675EDA6C0C /* heads */ = {isa = PBXFileReference; lastKnownFileType = folder; name = heads; path = Resources/heads; sourceTree = SOURCE_ROOT; };
 		1E146977294AFC1715E101E1 /* HeadPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadPreviewView.swift; sourceTree = "<group>"; };
-		28EE0C3D99FE3E00DC44342D /* PC0002_00_Eye_C.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = PC0002_00_Eye_C.jpg; sourceTree = "<group>"; };
 		37A517775DCB157A754557A4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		38ADB8FF45D62CA86CDFB39D /* FaceCapProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceCapProtocol.swift; sourceTree = "<group>"; };
-		39B877D968FF9525C67D3C2A /* Face_D.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Face_D.jpg; sourceTree = "<group>"; };
 		3E832538A4ABF25E53F4587D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4081DB40B6952BDA7F0D5D30 /* UDPSender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UDPSender.swift; sourceTree = "<group>"; };
-		45B3183E9CC12DF085041FB7 /* PC0002_00_Hair_C.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = PC0002_00_Hair_C.jpg; sourceTree = "<group>"; };
-		5FDC4540434BADF901EA2A7E /* Torso_D.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Torso_D.jpg; sourceTree = "<group>"; };
 		7705CD9281312B82CC29A30A /* FaceCapStreamerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceCapStreamerApp.swift; sourceTree = "<group>"; };
 		79154CCE5451C875CEC2608B /* FCHModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FCHModel.swift; sourceTree = "<group>"; };
-		7FAEBCE85F831227D01ABAB5 /* Common_LightMouth_Player_C.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Common_LightMouth_Player_C.jpg; sourceTree = "<group>"; };
-		8203589CEFBCD09AB04E1D5A /* PC0002_00_Hair_C.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PC0002_00_Hair_C.png; sourceTree = "<group>"; };
-		847BA9DD31CC5603EFF5D427 /* head.fch */ = {isa = PBXFileReference; lastKnownFileType = file; path = head.fch; sourceTree = "<group>"; };
-		84B244E9738BA8660F07EC5D /* FaceCapStreamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FaceCapStreamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		90F548F8C2BB5B1C6042375E /* Tifa_Hair_D.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tifa_Hair_D.png; sourceTree = "<group>"; };
+		84B244E9738BA8660F07EC5D /* FaceCapStreamer.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FaceCapStreamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		93CD384695138D4AC33C498D /* HeadCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadCatalog.swift; sourceTree = "<group>"; };
 		9A806F3D1FAD29D216A21A9F /* FaceFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceFrame.swift; sourceTree = "<group>"; };
 		B04E29DA075D4640F3FD57D9 /* OSCEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSCEncoder.swift; sourceTree = "<group>"; };
 		E3328822411E65766D0C4C38 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		F89162311FBE70E6E0B5B263 /* G8FBaseMouthMapD_1005.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = G8FBaseMouthMapD_1005.jpg; sourceTree = "<group>"; };
 		FECA32067AA5B046D9DA2A2D /* FaceCaptureEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceCaptureEngine.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -60,17 +42,7 @@
 		68CF4F4E126C4F66998DF6F5 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				7FAEBCE85F831227D01ABAB5 /* Common_LightMouth_Player_C.jpg */,
-				39B877D968FF9525C67D3C2A /* Face_D.jpg */,
-				F89162311FBE70E6E0B5B263 /* G8FBaseMouthMapD_1005.jpg */,
-				847BA9DD31CC5603EFF5D427 /* head.fch */,
-				28EE0C3D99FE3E00DC44342D /* PC0002_00_Eye_C.jpg */,
-				45B3183E9CC12DF085041FB7 /* PC0002_00_Hair_C.jpg */,
-				8203589CEFBCD09AB04E1D5A /* PC0002_00_Hair_C.png */,
-				16652EB29298B6C06AC83545 /* Tifa Head D_AO.jpg */,
-				09F99F1EA5C589096BE34B6D /* Tifa Torso D_AO.jpg */,
-				90F548F8C2BB5B1C6042375E /* Tifa_Hair_D.png */,
-				5FDC4540434BADF901EA2A7E /* Torso_D.jpg */,
+				1519431FFE4867675EDA6C0C /* heads */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -92,6 +64,7 @@
 				FECA32067AA5B046D9DA2A2D /* FaceCaptureEngine.swift */,
 				9A806F3D1FAD29D216A21A9F /* FaceFrame.swift */,
 				79154CCE5451C875CEC2608B /* FCHModel.swift */,
+				93CD384695138D4AC33C498D /* HeadCatalog.swift */,
 				1E146977294AFC1715E101E1 /* HeadPreviewView.swift */,
 				3E832538A4ABF25E53F4587D /* Info.plist */,
 				B04E29DA075D4640F3FD57D9 /* OSCEncoder.swift */,
@@ -169,17 +142,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				18AB90A49C88C4963B4C306A /* Common_LightMouth_Player_C.jpg in Resources */,
-				BE1EC5D42759AC6DF58A51B8 /* Face_D.jpg in Resources */,
-				C898647122FFE6CB11803668 /* G8FBaseMouthMapD_1005.jpg in Resources */,
-				019E0C316D64A09D677182CB /* PC0002_00_Eye_C.jpg in Resources */,
-				C10A6578C5F0AA81E060677D /* PC0002_00_Hair_C.jpg in Resources */,
-				7A9E4410CBAAF51AD8847A1A /* PC0002_00_Hair_C.png in Resources */,
-				400E9B4899F4059BFE64ADAE /* Tifa Head D_AO.jpg in Resources */,
-				4C62CAC97387E56C0BF26F6B /* Tifa Torso D_AO.jpg in Resources */,
-				FDFD48A492B774F143665F57 /* Tifa_Hair_D.png in Resources */,
-				9ABF5099E9179D02F4B2FF1C /* Torso_D.jpg in Resources */,
-				C2A53F4EE995CCCE51712171 /* head.fch in Resources */,
+				B1B7540D106CD50A513750C5 /* heads in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -196,6 +159,7 @@
 				E96AE22D2E0FC30E4991E9AD /* FaceCapStreamerApp.swift in Sources */,
 				898B4AF84B23B9279568D0B7 /* FaceCaptureEngine.swift in Sources */,
 				0FA994117009BF40B319D36F /* FaceFrame.swift in Sources */,
+				BB9FA4FF3C5844C6960F8F50 /* HeadCatalog.swift in Sources */,
 				FE04244ACB6267E9E8767534 /* HeadPreviewView.swift in Sources */,
 				0FE2C93F01AACEBD962C893D /* OSCEncoder.swift in Sources */,
 				9886FB3C0EF4E9E91E05E04C /* SettingsView.swift in Sources */,
@@ -268,7 +232,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = L4VM8S6JNH;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -351,7 +314,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = L4VM8S6JNH;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

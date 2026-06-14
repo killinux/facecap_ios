@@ -11,7 +11,9 @@ targets:
     platform: iOS
     sources:
       - Sources
-      - path: Resources
+      # 文件夹引用：保留 heads/<id>/ 子目录结构，避免各头模纹理重名压平冲突
+      - path: Resources/heads
+        type: folder
         buildPhase: resources
     settings:
       base:

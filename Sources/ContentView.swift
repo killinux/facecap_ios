@@ -5,9 +5,11 @@ struct ContentView: View {
     @StateObject private var engine = FaceCaptureEngine()
     @AppStorage("targetHost") private var targetHost = ""
     @AppStorage("targetPort") private var targetPort = "9001"
+    @AppStorage("selectedHead") private var selectedHead = HeadCatalog.default?.id ?? "Children"
 
     @State private var isFullscreen = false
     @State private var showSettings = false
+    @State private var showHeadPicker = false
     @State private var exportURL: URL?
 
     private let teal = Color(red: 0.36, green: 0.73, blue: 0.79)
@@ -19,7 +21,7 @@ struct ContentView: View {
             Color(white: 0.18).ignoresSafeArea()
 
             if engine.isSupported {
-                HeadPreviewView(engine: engine)
+                HeadPreviewView(engine: engine, selectedHead: selectedHead)
                     .ignoresSafeArea()
             }
 
@@ -47,6 +49,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(host: $targetHost, port: $targetPort)
+        }
+        .sheet(isPresented: $showHeadPicker) {
+            HeadPickerView(selectedHead: $selectedHead)
         }
         .sheet(item: $exportURL) { url in
             ActivityView(items: [url])
@@ -99,6 +104,7 @@ struct ContentView: View {
                 }
             }
             HStack(spacing: 10) {
+                grayButton("头模") { showHeadPicker = true }
                 grayButton("实况", highlighted: engine.isStreaming) { toggleLive() }
                 grayButton("全屏") { withAnimation { isFullscreen = true } }
                 grayButton("设置") { showSettings = true }
@@ -164,4 +170,43 @@ struct ContentView: View {
 
 extension URL: Identifiable {
     public var id: String { absoluteString }
+}
+
+/// 头模选择列表：列出 bundle 内全部可切换头模，勾选当前项，选中即切换。
+struct HeadPickerView: View {
+
+    @Binding var selectedHead: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if HeadCatalog.all.isEmpty {
+                    Text("未找到内置头模").foregroundStyle(.secondary)
+                }
+                ForEach(HeadCatalog.all) { head in
+                    Button {
+                        selectedHead = head.id
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Text(head.displayName).foregroundStyle(.primary)
+                            Spacer()
+                            if head.id == selectedHead {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(.tint)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("选择头模")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("完成") { dismiss() }
+                }
+            }
+        }
+    }
 }

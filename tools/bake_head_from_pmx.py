@@ -3,8 +3,17 @@
 import bpy, addon_utils, json, struct, os, shutil, sys
 import numpy as np
 
+# 可被命令行覆盖：Blender --background --python bake_head_from_pmx.py -- <PMX> <OUT_DIR>
 PMX = "/Users/bytedance/Downloads/Reika 18/Reika18_Children.pmx"
-OUT_DIR = "/Users/bytedance/work/mytest/facecap_ios/Resources"
+OUT_DIR = "/Users/bytedance/work/mytest/facecap_ios/Resources/heads/Children"
+if "--" in sys.argv:
+    _extra = sys.argv[sys.argv.index("--") + 1:]
+    if len(_extra) >= 1 and _extra[0]:
+        PMX = _extra[0]
+    if len(_extra) >= 2 and _extra[1]:
+        OUT_DIR = _extra[1]
+print("PMX:", PMX)
+print("OUT_DIR:", OUT_DIR)
 NECK_Z = None  # 自动取 首 骨骼高度
 
 addon_utils.enable("mmd_tools", default_set=True)

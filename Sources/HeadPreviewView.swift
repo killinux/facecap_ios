@@ -7,6 +7,8 @@ import SwiftUI
 struct HeadPreviewView: UIViewRepresentable {
 
     let engine: FaceCaptureEngine
+    /// 当前选中的头模 id（HeadCatalog.Head.id）。变化时热切换模型。
+    let selectedHead: String
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
@@ -22,10 +24,13 @@ struct HeadPreviewView: UIViewRepresentable {
         engine.onFrame = { [weak coordinator] frame, geometry in
             coordinator?.apply(frame: frame, geometry: geometry)
         }
+        coordinator.setHead(selectedHead)
         return view
     }
 
-    func updateUIView(_ uiView: SCNView, context: Context) {}
+    func updateUIView(_ uiView: SCNView, context: Context) {
+        context.coordinator.setHead(selectedHead)
+    }
 
     final class Coordinator {
 
@@ -33,6 +38,8 @@ struct HeadPreviewView: UIViewRepresentable {
         private let headNode = SCNNode()
 
         // FCH 完整头模
+        private var currentHeadID: String?
+        private var modelRoot: SCNNode?
         private var morpher: SCNMorpher?
         /// Face Cap 索引 → morph target 下标（无对应通道为 -1）
         private var shapeToTarget: [Int] = []
@@ -40,6 +47,7 @@ struct HeadPreviewView: UIViewRepresentable {
         private var eyeRightNode: SCNNode?
 
         // 回退：ARKit 面罩
+        private var maskRoot: SCNNode?
         private var maskGeometry: ARSCNFaceGeometry?
         private var maskEyeLeft: SCNNode?
         private var maskEyeRight: SCNNode?
@@ -71,21 +79,31 @@ struct HeadPreviewView: UIViewRepresentable {
             scene.rootNode.addChildNode(ambientNode)
 
             scene.rootNode.addChildNode(headNode)
+        }
 
-            if !loadFCHModel() {
+        // MARK: - FCH 头模切换
+
+        /// 切到指定 id 的头模；与当前相同则忽略。加载失败时保留当前头模，
+        /// 若从未成功加载过任何头模则回退 ARKit 面罩。
+        func setHead(_ id: String) {
+            guard id != currentHeadID else { return }
+            if loadHead(id: id) {
+                currentHeadID = id
+                removeMaskFallback()
+            } else if currentHeadID == nil && maskRoot == nil {
                 setupMaskFallback()
             }
         }
 
-        // MARK: - FCH 头模
-
-        private func loadFCHModel() -> Bool {
-            guard let url = Bundle.main.url(forResource: "head", withExtension: "fch"),
-                  let resourceDir = Bundle.main.resourceURL,
-                  let model = try? FCHModel.load(from: url, texturesDir: resourceDir)
+        private func loadHead(id: String) -> Bool {
+            guard let head = HeadCatalog.head(id: id),
+                  let model = try? FCHModel.load(
+                    from: head.fchURL, texturesDir: head.texturesDir)
             else { return false }
 
+            modelRoot?.removeFromParentNode()
             headNode.addChildNode(model.rootNode)
+            modelRoot = model.rootNode
             morpher = model.morpher
             eyeLeftNode = model.eyeLeftNode
             eyeRightNode = model.eyeRightNode
@@ -99,6 +117,14 @@ struct HeadPreviewView: UIViewRepresentable {
 
         // MARK: - ARKit 面罩回退
 
+        private func removeMaskFallback() {
+            maskRoot?.removeFromParentNode()
+            maskRoot = nil
+            maskGeometry = nil
+            maskEyeLeft = nil
+            maskEyeRight = nil
+        }
+
         private func setupMaskFallback() {
             guard let device = MTLCreateSystemDefaultDevice(),
                   let geometry = ARSCNFaceGeometry(device: device, fillMesh: false)
@@ -108,12 +134,15 @@ struct HeadPreviewView: UIViewRepresentable {
             material?.diffuse.contents = UIColor(white: 0.72, alpha: 1)
             material?.roughness.contents = 0.88
             maskGeometry = geometry
-            headNode.addChildNode(SCNNode(geometry: geometry))
 
+            let root = SCNNode()
+            root.addChildNode(SCNNode(geometry: geometry))
             maskEyeLeft = Self.makeEyeball()
             maskEyeRight = Self.makeEyeball()
-            headNode.addChildNode(maskEyeLeft!)
-            headNode.addChildNode(maskEyeRight!)
+            root.addChildNode(maskEyeLeft!)
+            root.addChildNode(maskEyeRight!)
+            headNode.addChildNode(root)
+            maskRoot = root
         }
 
         // MARK: - 每帧更新
