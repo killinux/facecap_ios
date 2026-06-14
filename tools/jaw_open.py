@@ -45,6 +45,20 @@ def mouth_region(basis, eye_z, neck_z):
     return front & lower
 
 
+def detect_lip_line(basis, jd, eye_z, neck_z):
+    """从下颌运动边界动态测真实唇线高度（Blender z）——各模型嘴的位置/高度不同，
+    写死偏移会让上唇操作错位。取中央前脸「下唇运动顶点的最高处」=下唇上缘≈唇线。
+    测不到时回退到 眼高-SEAM_BELOW_EYE。"""
+    jm = np.linalg.norm(jd, axis=1)
+    front = basis[:, 1] < np.percentile(basis[:, 1], 20)
+    cand = ((np.abs(basis[:, 0]) < 0.012) & front & (jm > 0.003)
+            & (basis[:, 2] < eye_z - 0.02) & (basis[:, 2] > neck_z))
+    if cand.sum() >= 5:
+        # 骨骼运动最高点在下唇内缘权重缺口的「下方」（缺口处静止），故 +余量补到真唇线
+        return float(np.percentile(basis[cand, 2], 90)) + 0.012
+    return eye_z - SEAM_BELOW_EYE
+
+
 def open_score(delta, region):
     """嘴区平均向下（z 减小）位移，越大表示张得越开。"""
     return -float(delta[region, 2].mean()) if region.sum() else 0.0
@@ -72,19 +86,17 @@ def fill_static_holes(delta, mesh, region, iters=15, lam=0.5):
     return d
 
 
-def upper_lip_lift(basis, eye_z, jaw_mag, lift_mm=6.0):
+def upper_lip_lift(basis, seam_z, lift_mm=5.0):
     """上唇中央（门牙宽度）微抬的位移场（Blender 系），露出上门牙。
     转下颌骨只动下颌，静止的上唇下边缘会垂下挡住上前牙；自然张嘴时上唇本会略抬。
-    关键：用 jaw_mag 门控「不随下颌动的顶点才抬」——既自动只命中上唇（排除下沉的下唇），
-    又能覆盖到最容易估偏的下边缘。在唇缝附近一层、前脸、中央高斯加权抬升（+z=上）。"""
+    唇线测准后（见 detect_lip_line），按「高度」平滑抬升：唇线以上才抬、峰在唇缘、向上渐隐。
+    纯高度场→边缘平顺（早期用运动门控会在抬/不抬边界产生锯齿波浪，已弃用）。"""
     x, y, z = basis[:, 0], basis[:, 1], basis[:, 2]
-    seam_z = eye_z - SEAM_BELOW_EYE
-    band = (np.clip((z - (seam_z - 0.008)) / 0.004, 0, 1)    # 含下边缘（seam-8mm 起渐入）
-            * np.clip((seam_z + 0.012 - z) / 0.012, 0, 1))    # 向上 ~12mm 渐隐
+    above = np.clip((z - (seam_z - 0.001)) / 0.002, 0, 1)    # 唇线以上才抬（排除下唇）
+    fade = np.clip((seam_z + 0.013 - z) / 0.013, 0, 1)       # 峰在唇缘，向上 13mm 渐隐
     front = np.clip((np.percentile(y, 25) - y) / 0.02, 0, 1)
     cen = np.exp(-(x / 0.030) ** 2)                          # 中央（门牙）高斯
-    static = np.clip((0.0015 - jaw_mag) / 0.0015, 0, 1)      # 只抬不随颌动的（排除下唇）
-    w = band * front * cen * static
+    w = above * fade * front * cen
     lift = np.zeros((len(basis), 3))
     lift[:, 2] = (lift_mm / 1000.0) * w                      # 抬升
     lift[:, 1] = (0.2 * lift_mm / 1000.0) * w                # 略向内贴齿列
@@ -93,7 +105,7 @@ def upper_lip_lift(basis, eye_z, jaw_mag, lift_mm=6.0):
 
 def build_jaw_open(*, arm, mesh, basis, capture, zero_all, eye_z, neck_z,
                    vowel_delta=None, deficient_mm=1.2, angle=0.42,
-                   target_mm=14.0, upper_lip_lift_mm=6.0):
+                   target_mm=14.0, upper_lip_lift_mm=5.0):
     """生成一个可用的 jawOpen 位移（Blender 系，[n,3]）。
 
     参数：
@@ -141,7 +153,7 @@ def build_jaw_open(*, arm, mesh, basis, capture, zero_all, eye_z, neck_z,
 
     # 补漏：唇缝以下、贴嘴前部的小盒区内平滑，填掉下唇内缘的权重缺口（漏网静止点）。
     # 收紧到嘴/下巴前部，不碰脖子/后脑/牙齿/上唇。
-    seam_z = eye_z - SEAM_BELOW_EYE
+    seam_z = detect_lip_line(basis, jd, eye_z, neck_z)   # 动态测真实唇线（勿写死）
     mouth_box = ((basis[:, 2] < seam_z) & (basis[:, 2] > seam_z - 0.045)
                  & (basis[:, 1] < np.percentile(basis[:, 1], 25))
                  & (np.abs(basis[:, 0]) < 0.06))
@@ -153,12 +165,11 @@ def build_jaw_open(*, arm, mesh, basis, capture, zero_all, eye_z, neck_z,
     if mx > 1e-3:
         jd *= target_mm / mx
 
-    # 上唇略抬，露出上门牙（在归一化后叠加，按绝对 mm；按 jaw_mag 门控只抬上唇）
+    # 上唇略抬，露出上门牙（在归一化后叠加，按绝对 mm；按高度只抬唇线以上的上唇）
     if upper_lip_lift_mm > 0:
-        jaw_mag = np.linalg.norm(jd, axis=1)
-        jd = jd + upper_lip_lift(basis, eye_z, jaw_mag, lift_mm=upper_lip_lift_mm)
+        jd = jd + upper_lip_lift(basis, seam_z, lift_mm=upper_lip_lift_mm)
 
     info += (f" -> 下颌骨 {jaw_cands[0]} axis={best[1]} sign={best[2]} "
-             f"raw={raw_mm:.0f}mm 补漏{n_static}点 归一化{target_mm:.0f}mm "
-             f"上唇抬{upper_lip_lift_mm:.0f}mm")
+             f"raw={raw_mm:.0f}mm 唇线y={(seam_z-eye_z)*1000:.0f}mm(相对眼) "
+             f"补漏{n_static}点 归一化{target_mm:.0f}mm 上唇抬{upper_lip_lift_mm:.0f}mm")
     return jd, info
