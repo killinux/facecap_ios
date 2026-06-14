@@ -22,10 +22,22 @@ struct FaceFrame {
     private static let portraitFix = simd_float4x4(
         simd_quatf(angle: -.pi / 2, axis: SIMD3(0, 0, 1)))
 
+    /// jawOpen 在 blendShapeOrder 中的下标，用于死区处理。
+    private static let jawOpenIndex = FaceCapProtocol.blendShapeOrder.firstIndex(of: .jawOpen)
+    /// jawOpen 死区阈值：ARKit 即使闭口也常报此量级的 jawOpen（下巴没咬死），
+    /// 直接透传会让头模嘴闭不紧。调大=闭得更死但小幅张嘴变迟钝，调小=更灵敏但易留缝。
+    private static let jawOpenDeadzone: Float = 0.12
+
     init(anchor: ARFaceAnchor, cameraTransform: simd_float4x4?, time: TimeInterval) {
         self.time = time
         let dict = anchor.blendShapes
         shapes = FaceCapProtocol.blendShapeOrder.map { dict[$0]?.floatValue ?? 0 }
+        // jawOpen 死区：闭口时 ARKit 仍报小幅 jawOpen → 头模闭不紧。低于阈值归零，并把
+        // [阈值,1] 平滑重映射回 [0,1]，正常张嘴幅度基本不受影响。预览与 OSC 推流同时生效。
+        if let j = Self.jawOpenIndex {
+            let dz = Self.jawOpenDeadzone
+            shapes[j] = max(0, (shapes[j] - dz) / (1 - dz))
+        }
         if let camera = cameraTransform {
             // 相机参考系（Face Cap 行为）：正视摄像头 = 零旋转，
             // 手机靠近/远离同样反映为位置变化
