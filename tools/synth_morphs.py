@@ -170,6 +170,37 @@ def synth_all(P):
     return out
 
 
+def synth_jaw_open(P, angle=0.30):
+    """程序化 jawOpen：下颌（唇缝以下、非颈、前脸）绕左右轴下旋开口，上唇不动。
+    用于个别 PMX 的「あ」morph 缺陷（覆盖太窄或几乎不动，如 AC/inase）时替换 native。
+    pivot 取下颌髁附近（略低于眼、靠后）；薄过渡带让上下唇在缝处自然分离。"""
+    piv = np.array([0.0, 0.005, -0.015])
+    y, z = P[:, 1], P[:, 2]
+    t = np.clip((SEAM_Y - y) / 0.007, 0, 1)          # seam 以上=0(上唇不动)，下方 7mm 内升满
+    wy = t * t * (3 - 2 * t)                          # smoothstep 薄过渡，唇缝处分离
+    wneck = np.clip((y - (-0.125)) / 0.03, 0, 1)      # 颈部淡出
+    wz = np.clip((z - (-0.02)) / 0.04, 0, 1)          # 后脑/颈后不动
+    w = wy * wneck * wz
+    rel = P - piv
+    c, s = np.cos(angle), np.sin(angle)
+    rot = P.copy()
+    rot[:, 1] = piv[1] + rel[:, 1] * c - rel[:, 2] * s
+    rot[:, 2] = piv[2] + rel[:, 1] * s + rel[:, 2] * c
+    delta = (rot - P) * w[:, None]
+    nz = np.where(np.linalg.norm(delta, axis=1) > 1e-5)[0]
+    return nz.astype(np.uint32), delta[nz].astype(np.float32)
+
+
+def _jaw_is_deficient(P, vi, dl):
+    """native jawOpen 是否缺陷：下颌区(唇缝以下前脸)整体不下沉则判缺陷。
+    Children/Office/Remake 下沉≥4.7mm/占比≥63%；AC -1mm/16%、inase 0mm/0% → 缺陷。"""
+    full = np.zeros_like(P)
+    full[vi] = dl
+    reg = (P[:, 1] < SEAM_Y) & (P[:, 1] > -0.105) & (P[:, 2] > 0.03)
+    dy = full[reg, 1]
+    return not (dy.mean() < -0.003 and (dy < -0.003).mean() > 0.25)
+
+
 def _merge(a, b, nverts):
     """把两个 (idx,delta) 合并成一个稀疏 morph（同顶点相加）。"""
     acc = np.zeros((nverts, 3), np.float64)
@@ -241,6 +272,26 @@ def synth_into_fch(path):
             m["_gain"] = target
             print(f"  * {m['name']:16} gain {applied:.2f}->{target:.2f}  -> maxmm "
                   f"{float(np.linalg.norm(arr.reshape(-1,3)*factor,axis=1).max())*1000:.1f}")
+
+    # jawOpen 缺陷检测：个别 PMX 的「あ」覆盖太窄/几乎不动（AC/inase），用程序化合成替换。
+    jaw = next((m for m in head["morphs"] if m["name"] == "jawOpen"), None)
+    deficient = True
+    if jaw is not None and "_data" not in jaw["deltas"]:
+        vr, dr = jaw["vertexIndices"], jaw["deltas"]
+        vi = np.frombuffer(bytes(blob), dtype="<u4", count=vr["count"], offset=vr["offset"])
+        dl = np.frombuffer(bytes(blob), dtype="<f4", count=dr["count"],
+                           offset=dr["offset"]).reshape(-1, 3)
+        deficient = _jaw_is_deficient(P, vi, dl)
+    if deficient:
+        head["morphs"] = [m for m in head["morphs"] if m["name"] != "jawOpen"]
+        jidx, jdelta = synth_jaw_open(P)
+        head["morphs"].append({
+            "name": "jawOpen",
+            "vertexIndices": {"_data": jidx}, "deltas": {"_data": jdelta}})
+        print(f"  ~ jawOpen 合成替换 (native 缺陷)  verts={len(jidx)} "
+              f"maxmm={float(np.linalg.norm(jdelta, axis=1).max()) * 1000:.1f}")
+    else:
+        print("  = jawOpen 保留 native")
 
     synth = synth_all(P)
     for name in MANAGED:
