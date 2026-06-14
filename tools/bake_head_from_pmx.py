@@ -172,6 +172,62 @@ for arkit, src, mode in MAPPING:
         w = np.clip(0.5 + basis[:, 0] * sign / (2 * FALLOFF), 0, 1)[:, None]
         morphs_out[arkit] = d * w
 
+# ---- jawOpen：元音「あ」开口不足时，旋转模型自带下颌骨复用其口腔/牙齿 ----
+# 部分 PMX（AC/inase）的张嘴是骨骼驱动，「あ」只是嘴型微调、不开颌。直接转 jaw 骨，
+# 带动蒙皮的口腔内壁/牙齿一起张开，露出模型自带的牙——比顶点合成更真实。
+def _pose_reset():
+    for pb in arm.pose.bones:
+        pb.rotation_mode = "XYZ"
+        pb.rotation_euler = (0, 0, 0)
+
+# 嘴/下颌区（Blender z-up、面朝 -Y）：脸最前 18% 且眼下、颈上
+_eye_z = float(eyeL_w.z)
+_front = basis[:, 1] < np.percentile(basis[:, 1], 18)
+_lower = (basis[:, 2] < _eye_z - 0.03) & (basis[:, 2] > NECK_Z - 0.015)
+_mouth_reg = _front & _lower
+def _open_score(delta):  # 嘴区平均向下(z 减小)位移，越大越开
+    return -float(delta[_mouth_reg, 2].mean()) if _mouth_reg.sum() else 0.0
+
+aa_score = _open_score(morphs_out["jawOpen"]) if "jawOpen" in morphs_out else 0.0
+jaw_cands = [b.name for b in arm.data.bones
+             if (("jaw" in b.name.lower() or "あご" in b.name.lower() or "顎" in b.name)
+                 and "upper" not in b.name.lower())]
+jaw_cands.sort(key=len)  # 取最短名（主下颌骨，非 jaw upper ...）
+print(f"JAW: vowel あ open_score={aa_score*1000:.1f}mm  jaw_bones={jaw_cands}")
+
+# 元音「あ」嘴区平均下移阈值：低于此视为「あ」几乎不开口（骨骼驱动型模型），改用下颌骨。
+# 实测：Children/Office/Remake 的「あ」≈1.8~2.3mm（正常开口，保留）；AC 0.8、inase -0.1mm
+# （「あ」只是嘴型、靠 jaw 骨开口，换骨骼）。1.2mm 居中且两侧各留 ~0.6mm 余量。
+JAW_DEFICIENT = 0.0012
+JAW_ANGLE = 0.42
+if aa_score < JAW_DEFICIENT and jaw_cands:
+    jb = arm.pose.bones[jaw_cands[0]]
+    best = (aa_score, None, None)
+    for axis in range(3):
+        for sgn in (1, -1):
+            _pose_reset(); zero_all()
+            e = [0.0, 0.0, 0.0]; e[axis] = sgn * JAW_ANGLE
+            jb.rotation_euler = e
+            sc = _open_score(capture() - basis)
+            if sc > best[0]:
+                best = (sc, axis, sgn)
+    _pose_reset(); zero_all()
+    if best[1] is not None:
+        e = [0.0, 0.0, 0.0]; e[best[1]] = best[2] * JAW_ANGLE
+        jb.rotation_euler = e
+        jd = capture() - basis
+        _pose_reset(); zero_all()
+        # 归一化张嘴幅度到与 Children 原生 jawOpen 一致（满 weight 不过度）
+        JAW_TARGET_MM = 14.0
+        mx = float(np.linalg.norm(jd, axis=1).max()) * 1000
+        if mx > 1e-3:
+            jd *= JAW_TARGET_MM / mx
+        morphs_out["jawOpen"] = jd
+        print(f"JAW: 用下颌骨 {jaw_cands[0]} axis={best[1]} sign={best[2]} "
+              f"raw_max={mx:.1f}mm -> 归一化{JAW_TARGET_MM:.0f}mm（替换元音 あ）")
+    else:
+        print("JAW: 无能开口的旋转轴，保留元音 あ")
+
 # tongueOut：模型自带真舌头（Tongue 1~4 舌骨）。按舌骨顶点权重让舌头前伸下垂，
 # 权重渐变天然实现舌根固定、舌尖伸出最多。Blender 坐标：前伸=-Y、下垂=-Z。
 tong_groups = {}

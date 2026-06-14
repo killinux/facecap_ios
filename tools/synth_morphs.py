@@ -273,25 +273,24 @@ def synth_into_fch(path):
             print(f"  * {m['name']:16} gain {applied:.2f}->{target:.2f}  -> maxmm "
                   f"{float(np.linalg.norm(arr.reshape(-1,3)*factor,axis=1).max())*1000:.1f}")
 
-    # jawOpen 缺陷检测：个别 PMX 的「あ」覆盖太窄/几乎不动（AC/inase），用程序化合成替换。
+    # jawOpen 由烘焙脚本负责（元音「あ」或模型下颌骨，见 bake_head_from_pmx.py）。
+    # 仅当 FCH 里完全没有 jawOpen 或几乎为零（无下颌骨可用的兜底）才用程序化合成。
     jaw = next((m for m in head["morphs"] if m["name"] == "jawOpen"), None)
-    deficient = True
+    jaw_maxmm = 0.0
     if jaw is not None and "_data" not in jaw["deltas"]:
-        vr, dr = jaw["vertexIndices"], jaw["deltas"]
-        vi = np.frombuffer(bytes(blob), dtype="<u4", count=vr["count"], offset=vr["offset"])
+        dr = jaw["deltas"]
         dl = np.frombuffer(bytes(blob), dtype="<f4", count=dr["count"],
                            offset=dr["offset"]).reshape(-1, 3)
-        deficient = _jaw_is_deficient(P, vi, dl)
-    if deficient:
+        jaw_maxmm = float(np.linalg.norm(dl, axis=1).max()) * 1000
+    if jaw is None or jaw_maxmm < 2.0:
         head["morphs"] = [m for m in head["morphs"] if m["name"] != "jawOpen"]
         jidx, jdelta = synth_jaw_open(P)
         head["morphs"].append({
             "name": "jawOpen",
             "vertexIndices": {"_data": jidx}, "deltas": {"_data": jdelta}})
-        print(f"  ~ jawOpen 合成替换 (native 缺陷)  verts={len(jidx)} "
-              f"maxmm={float(np.linalg.norm(jdelta, axis=1).max()) * 1000:.1f}")
+        print(f"  ~ jawOpen 程序化兜底（无可用下颌骨）verts={len(jidx)}")
     else:
-        print("  = jawOpen 保留 native")
+        print(f"  = jawOpen 保留烘焙结果 (maxΔ={jaw_maxmm:.1f}mm)")
 
     synth = synth_all(P)
     for name in MANAGED:
