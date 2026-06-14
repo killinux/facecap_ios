@@ -209,13 +209,18 @@ enum FCHModel {
             dataStride: perVector * 4)
     }
 
+    /// 是否眼球材质（排除睫毛/眉毛/眼影）。
+    private static func isEyeball(_ name: String) -> Bool {
+        let n = name.lowercased()
+        return n.contains("eye") && !n.contains("lash") && !n.contains("brow")
+            && !n.contains("shadow")
+    }
+
     /// 按部位选粗糙度：眼球湿润高光、牙齿/口腔次之、头发哑光、皮肤带轻微光泽
     /// （比原先一律 0.85 更有质感，配合 IBL/三点光更自然）。
     private static func roughness(for name: String) -> CGFloat {
+        if isEyeball(name) { return 0.08 }
         let n = name.lowercased()
-        if n.contains("eye"), !n.contains("lash"), !n.contains("brow"), !n.contains("shadow") {
-            return 0.16
-        }
         if n.contains("teeth") || n.contains("tooth") || n.contains("歯") { return 0.30 }
         if n.contains("mouth") || n.contains("tongue") || n.contains("舌") { return 0.42 }
         if n.contains("hair") { return 0.72 }
@@ -228,6 +233,11 @@ enum FCHModel {
         material.roughness.contents = roughness(for: submesh.name)
         material.metalness.contents = 0.0
         material.isDoubleSided = true
+        // 眼球加清漆层：在凸面上产生锐利高光点（catchlight），让眼睛有神
+        if isEyeball(submesh.name) {
+            material.clearCoat.contents = 1.0
+            material.clearCoatRoughness.contents = 0.03
+        }
         // 口腔/舌头用 Genesis 8 的 UDIM 平铺 UV（u 可达 4~5，tile 1005）。SceneKit 默认
         // clamp 会把 u 钳到 1.0 采到纹理黑边导致发黑；用 repeat 让 u 取小数部分映回 tile。
         material.diffuse.wrapS = .repeat
