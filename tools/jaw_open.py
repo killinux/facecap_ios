@@ -1,0 +1,138 @@
+"""通用 jawOpen（张嘴）生成器——自动适配不同 PMX 的张嘴机制。
+
+为什么需要它（问题综述，详见 tools/JAW_OPEN.md）：
+ARKit 的 jawOpen 通道要让头模张大嘴、露出牙/口腔。但 MMD 模型实现张嘴的方式分两类，
+直接烘元音 morph 会在部分模型上失败：
+
+  A 类·元音自带开颌：「あ」morph 本身就把下颌拉开（Children/Office/Remake）。直接用。
+  B 类·骨骼驱动开颌：「あ」只是嘴型微调，真正张嘴靠下颌骨（AC=head jaw / inase=Jaw Bone）。
+        只烘 morph 嘴张不开；且牙齿/口腔是蒙皮在下颌骨上的几何，必须转骨才会被带出来露牙。
+
+B 类还有个附带问题：源模型给下颌骨刷权重时，下唇内缘常留权重缺口（一圈顶点没绑到下颌骨）。
+纯转骨时这些「漏网点」不随颌下沉，在张开的上缘戳出小凸起/接缝。需在唇缝以下局部平滑修补。
+
+本模块把「判 A/B → 选轴转骨 → 补漏 → 归一化幅度」整套封装。bake_head_from_pmx.py 调用
+build_jaw_open()。**新增模型无需改代码**：阈值/角度/目标幅度都是参数，自动检测下颌骨与旋转轴。
+
+坐标系：全程 Blender 世界系（z-up、面朝 -Y），与 bake 的 basis 一致。
+"""
+import numpy as np
+
+# 唇缝在 Blender z 的位置 = 眼高 - 0.057（由 FCH 标定 SceneKit 眼 y=+0.010 / 唇缝 y=-0.047
+# 反推，各 Reika 模型眼睛已对齐到同一头模本地系）。
+SEAM_BELOW_EYE = 0.057
+
+
+def _pose_reset(arm):
+    for pb in arm.pose.bones:
+        pb.rotation_mode = "XYZ"
+        pb.rotation_euler = (0, 0, 0)
+
+
+def find_jaw_bones(arm):
+    """按名找下颌骨候选（排除 jaw upper… 那种上颌/上齿骨），短名优先（主下颌骨）。"""
+    cands = [b.name for b in arm.data.bones
+             if (("jaw" in b.name.lower() or "あご" in b.name.lower() or "顎" in b.name)
+                 and "upper" not in b.name.lower())]
+    cands.sort(key=len)
+    return cands
+
+
+def mouth_region(basis, eye_z, neck_z):
+    """打分用的嘴/下颌区（脸最前 18%、眼下、颈上）。"""
+    front = basis[:, 1] < np.percentile(basis[:, 1], 18)
+    lower = (basis[:, 2] < eye_z - 0.03) & (basis[:, 2] > neck_z - 0.015)
+    return front & lower
+
+
+def open_score(delta, region):
+    """嘴区平均向下（z 减小）位移，越大表示张得越开。"""
+    return -float(delta[region, 2].mean()) if region.sum() else 0.0
+
+
+def smooth_delta_in_region(delta, mesh, region, iters=20, lam=0.5):
+    """对 region 内顶点的位移场做受限拉普拉斯平滑（只在 region 内部求邻接平均）。
+    用途：填补下颌骨权重缺口造成的「漏网静止点」，region 外（上唇等）一点不动，
+    唇缝边界因被排除在 region 外而保持锐利。"""
+    ne = len(mesh.data.edges)
+    ev = np.empty(ne * 2, dtype=np.int64)
+    mesh.data.edges.foreach_get("vertices", ev)
+    ev = ev.reshape(-1, 2)
+    keep = region[ev[:, 0]] & region[ev[:, 1]]
+    ea, eb = ev[keep, 0], ev[keep, 1]
+    d = delta.copy()
+    for _ in range(iters):
+        acc = np.zeros_like(d)
+        cnt = np.zeros(len(d))
+        np.add.at(acc, ea, d[eb]); np.add.at(cnt, ea, 1.0)
+        np.add.at(acc, eb, d[ea]); np.add.at(cnt, eb, 1.0)
+        upd = region & (cnt > 0)
+        d[upd] = (1 - lam) * d[upd] + lam * (acc[upd] / cnt[upd, None])
+    return d
+
+
+def build_jaw_open(*, arm, mesh, basis, capture, zero_all, eye_z, neck_z,
+                   vowel_delta=None, deficient_mm=1.2, angle=0.42,
+                   target_mm=14.0):
+    """生成一个可用的 jawOpen 位移（Blender 系，[n,3]）。
+
+    参数：
+      arm/mesh        ：MMD 骨架对象 / 主网格对象
+      basis           ：静止顶点位置 [n,3]（Blender 世界系）
+      capture         ：无参回调，返回当前 evaluated 网格顶点位置 [n,3]
+      zero_all        ：无参回调，把所有 morph 滑条归零
+      eye_z/neck_z    ：眼/颈高度（Blender z），定位嘴区与唇缝
+      vowel_delta     ：已烘的元音「あ」位移 [n,3] 或 None
+      deficient_mm    ：元音嘴区开口<此值(mm) 判为 B 类骨骼驱动，改转下颌骨
+      angle           ：试转角（弧度）
+      target_mm       ：归一化后的满 weight 最大张嘴位移（对齐 Children 原生 ~14mm）
+
+    返回 (delta 或 None, info_str)。delta=None 表示「元音足够好，沿用元音」。
+    """
+    region = mouth_region(basis, eye_z, neck_z)
+    aa = open_score(vowel_delta, region) if vowel_delta is not None else 0.0
+    jaw_cands = find_jaw_bones(arm)
+    info = f"vowel あ={aa*1000:.1f}mm jaw_bones={jaw_cands}"
+
+    # A 类：元音自带开颌，或没有下颌骨可用 → 沿用元音
+    if aa * 1000 >= deficient_mm or not jaw_cands:
+        return None, info + " -> 保留元音"
+
+    # B 类：转下颌骨。自动在 3 轴 × 2 方向里挑「最能让嘴区下沉」的旋转
+    jb = arm.pose.bones[jaw_cands[0]]
+    best = (aa, None, None)
+    for axis in range(3):
+        for sgn in (1, -1):
+            _pose_reset(arm); zero_all()
+            e = [0.0, 0.0, 0.0]; e[axis] = sgn * angle
+            jb.rotation_euler = e
+            sc = open_score(capture() - basis, region)
+            if sc > best[0]:
+                best = (sc, axis, sgn)
+    _pose_reset(arm); zero_all()
+    if best[1] is None:
+        return None, info + " -> 无能开口的轴，保留元音"
+
+    e = [0.0, 0.0, 0.0]; e[best[1]] = best[2] * angle
+    jb.rotation_euler = e
+    jd = capture() - basis
+    _pose_reset(arm); zero_all()
+    raw_mm = float(np.linalg.norm(jd, axis=1).max()) * 1000
+
+    # 补漏：唇缝以下、贴嘴前部的小盒区内平滑，填掉下唇内缘的权重缺口（漏网静止点）。
+    # 收紧到嘴/下巴前部，不碰脖子/后脑/牙齿/上唇。
+    seam_z = eye_z - SEAM_BELOW_EYE
+    mouth_box = ((basis[:, 2] < seam_z) & (basis[:, 2] > seam_z - 0.045)
+                 & (basis[:, 1] < np.percentile(basis[:, 1], 25))
+                 & (np.abs(basis[:, 0]) < 0.06))
+    n_static = int((mouth_box & (np.linalg.norm(jd, axis=1) < 0.002)).sum())
+    jd = smooth_delta_in_region(jd, mesh, mouth_box, iters=20, lam=0.5)
+
+    # 归一化满 weight 张嘴幅度，跨模型一致
+    mx = float(np.linalg.norm(jd, axis=1).max()) * 1000
+    if mx > 1e-3:
+        jd *= target_mm / mx
+
+    info += (f" -> 下颌骨 {jaw_cands[0]} axis={best[1]} sign={best[2]} "
+             f"raw={raw_mm:.0f}mm 补漏{n_static}点 归一化{target_mm:.0f}mm")
+    return jd, info
