@@ -71,9 +71,28 @@ def smooth_delta_in_region(delta, mesh, region, iters=20, lam=0.5):
     return d
 
 
+def upper_lip_lift(basis, eye_z, jaw_mag, lift_mm=6.0):
+    """上唇中央（门牙宽度）微抬的位移场（Blender 系），露出上门牙。
+    转下颌骨只动下颌，静止的上唇下边缘会垂下挡住上前牙；自然张嘴时上唇本会略抬。
+    关键：用 jaw_mag 门控「不随下颌动的顶点才抬」——既自动只命中上唇（排除下沉的下唇），
+    又能覆盖到最容易估偏的下边缘。在唇缝附近一层、前脸、中央高斯加权抬升（+z=上）。"""
+    x, y, z = basis[:, 0], basis[:, 1], basis[:, 2]
+    seam_z = eye_z - SEAM_BELOW_EYE
+    band = (np.clip((z - (seam_z - 0.008)) / 0.004, 0, 1)    # 含下边缘（seam-8mm 起渐入）
+            * np.clip((seam_z + 0.012 - z) / 0.012, 0, 1))    # 向上 ~12mm 渐隐
+    front = np.clip((np.percentile(y, 25) - y) / 0.02, 0, 1)
+    cen = np.exp(-(x / 0.030) ** 2)                          # 中央（门牙）高斯
+    static = np.clip((0.0015 - jaw_mag) / 0.0015, 0, 1)      # 只抬不随颌动的（排除下唇）
+    w = band * front * cen * static
+    lift = np.zeros((len(basis), 3))
+    lift[:, 2] = (lift_mm / 1000.0) * w                      # 抬升
+    lift[:, 1] = (0.2 * lift_mm / 1000.0) * w                # 略向内贴齿列
+    return lift
+
+
 def build_jaw_open(*, arm, mesh, basis, capture, zero_all, eye_z, neck_z,
                    vowel_delta=None, deficient_mm=1.2, angle=0.42,
-                   target_mm=14.0):
+                   target_mm=14.0, upper_lip_lift_mm=6.0):
     """生成一个可用的 jawOpen 位移（Blender 系，[n,3]）。
 
     参数：
@@ -128,11 +147,17 @@ def build_jaw_open(*, arm, mesh, basis, capture, zero_all, eye_z, neck_z,
     n_static = int((mouth_box & (np.linalg.norm(jd, axis=1) < 0.002)).sum())
     jd = smooth_delta_in_region(jd, mesh, mouth_box, iters=20, lam=0.5)
 
-    # 归一化满 weight 张嘴幅度，跨模型一致
+    # 归一化满 weight 张嘴幅度，跨模型一致（下颌为主，先归一化再叠加上唇抬升）
     mx = float(np.linalg.norm(jd, axis=1).max()) * 1000
     if mx > 1e-3:
         jd *= target_mm / mx
 
+    # 上唇略抬，露出上门牙（在归一化后叠加，按绝对 mm；按 jaw_mag 门控只抬上唇）
+    if upper_lip_lift_mm > 0:
+        jaw_mag = np.linalg.norm(jd, axis=1)
+        jd = jd + upper_lip_lift(basis, eye_z, jaw_mag, lift_mm=upper_lip_lift_mm)
+
     info += (f" -> 下颌骨 {jaw_cands[0]} axis={best[1]} sign={best[2]} "
-             f"raw={raw_mm:.0f}mm 补漏{n_static}点 归一化{target_mm:.0f}mm")
+             f"raw={raw_mm:.0f}mm 补漏{n_static}点 归一化{target_mm:.0f}mm "
+             f"上唇抬{upper_lip_lift_mm:.0f}mm")
     return jd, info
