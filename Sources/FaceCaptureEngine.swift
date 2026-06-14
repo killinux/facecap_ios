@@ -22,6 +22,15 @@ final class FaceCaptureEngine: NSObject, ObservableObject, ARSessionDelegate {
     private var sender: UDPSender?
     private var calibrationRef: simd_float4x4?
     private var lastRawTransform: simd_float4x4?
+
+    // jawOpen 闭口基线：ARKit 即使闭口也持续报小幅 jawOpen（下巴没咬死），直接用会让头模
+    // 嘴闭不严。减去「闭口时的基线」让其能闭实。校正(校正按钮)时捕获当前值为基线，自适应
+    // 每人/每次坐姿；未校正时用默认值兜底。
+    private let jawOpenIdx = FaceCapProtocol.blendShapeOrder.firstIndex(of: .jawOpen)
+    private var jawOpenBaseline: Float = 0.10
+    private var lastJawOpenRaw: Float = 0
+    /// 基线之上再留的小死区，吸收抖动；阈值 = 基线 + 此值。
+    private static let jawResidualDeadzone: Float = 0.04
     /// 3D 预览的位置基准（首帧自动捕获；校正后归零）
     private var previewOrigin: SIMD3<Float>?
 
@@ -67,7 +76,9 @@ final class FaceCaptureEngine: NSObject, ObservableObject, ARSessionDelegate {
         }
         calibrationRef = raw
         previewOrigin = .zero // 校正后帧数据已是相对零点
-        statusText = "已校正：当前头部姿态设为零点"
+        // 把当前（应为放松闭口）的 jawOpen 设为闭口基线，之后逐帧减去 → 头模能闭严。
+        jawOpenBaseline = min(0.5, max(0, lastJawOpenRaw))
+        statusText = "已校正：头部姿态归零，闭口基线已记录"
     }
 
     // MARK: - 实况（OSC 推流）
@@ -237,6 +248,14 @@ final class FaceCaptureEngine: NSObject, ObservableObject, ARSessionDelegate {
             cameraTransform: session.currentFrame?.camera.transform,
             time: CACurrentMediaTime())
         lastRawTransform = frame.headTransform // 校正基准与帧同处相机参考系
+
+        // jawOpen 闭口基线扣除：减去基线 + 小死区，并把剩余区间平滑重映射回 [0,1]，
+        // 闭口时归零（闭严），正常张嘴基本不受影响。预览/录制/推流统一在此处理。
+        if let j = jawOpenIdx {
+            lastJawOpenRaw = frame.shapes[j]
+            let t = min(0.6, jawOpenBaseline + Self.jawResidualDeadzone)
+            frame.shapes[j] = max(0, (frame.shapes[j] - t) / (1 - t))
+        }
         if let ref = calibrationRef {
             frame.headTransform = ref.inverse * frame.headTransform
         }
