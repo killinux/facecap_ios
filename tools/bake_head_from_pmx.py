@@ -263,6 +263,34 @@ mid_eye = (np.array(eyeL_w) + np.array(eyeR_w)) / 2
 origin_b = np.array([0.0, mid_eye[1] + 0.06, mid_eye[2] - 0.01])  # 面部中心略靠后
 origin_s = conv(origin_b[None])[0]
 
+# 法线贴图：MMD 材质常没把法线接进节点，按 _D→_N 命名约定找（Face_D→Face_N）；脸皮子网格
+# 的漫反射常被换成怪名贴图（AO/-C/Tifa_Head），但这些都是 Genesis 8 脸、UV 标准，直接用
+# 源里的 G8 标准脸法线 Face_N 即可对齐（已离线渲染验证）。
+PMX_DIR = os.path.dirname(PMX)
+normal_paths = {}  # basename -> 绝对路径，末尾统一拷贝到 OUT_DIR
+def _register(cand):
+    bn = os.path.basename(cand)
+    normal_paths[bn] = cand
+    return bn
+def find_normal(tex_path, mat_name=""):
+    # 1) 常规 _D→_N（同目录）
+    if tex_path:
+        base, ext = os.path.splitext(tex_path)
+        if base.endswith("_D"):
+            for e in (ext, ".jpg", ".png", ".jpeg"):
+                cand = base[:-2] + "_N" + e
+                if os.path.exists(cand):
+                    return _register(cand)
+    # 2) 脸皮兜底：名字含 face/head（排除 hair/eye/lash/brow/ear）→ G8 标准脸法线 Face_N
+    n = mat_name.lower()
+    if ("face" in n or "head" in n) and not any(k in n for k in
+            ("hair", "eye", "lash", "brow", "ear")):
+        for e in (".jpg", ".png", ".jpeg"):
+            cand = os.path.join(PMX_DIR, "Face_N" + e)
+            if os.path.exists(cand):
+                return _register(cand)
+    return None
+
 def build_object(tri_mask, name, pivot_b, with_morphs, vert_extra_mask=None):
     tris = tri_v[tri_mask]
     tmats = tri_mat[tri_mask]
@@ -293,6 +321,7 @@ def build_object(tri_mask, name, pivot_b, with_morphs, vert_extra_mask=None):
         obj["submeshes"].append({
             "name": mats[mi],
             "texture": os.path.basename(tex) if tex else None,
+            "normal": find_normal(tex, mats[mi]),
             "transparent": bool(tex and tex.lower().endswith(".png")),
             "_idx": sel.astype(np.uint32).ravel(),
         })
@@ -338,7 +367,7 @@ for o in objects:
     }
     for s in o["submeshes"]:
         jo["submeshes"].append({
-            "name": s["name"], "texture": s["texture"],
+            "name": s["name"], "texture": s["texture"], "normal": s.get("normal"),
             "transparent": s["transparent"], "indices": put(s["_idx"]),
         })
     for m in o["morphs"]:
@@ -365,10 +394,14 @@ synth_morphs.synth_into_fch(os.path.join(OUT_DIR, "head.fch"))
 
 # 拷贝用到的纹理
 used_tex = {s["texture"] for o in objects for s in o["submeshes"] if s["texture"]}
-for o in objects:
-    pass
 for slot_name, p in mat_tex.items():
     if p and os.path.basename(p) in used_tex:
         shutil.copy(p, os.path.join(OUT_DIR, os.path.basename(p)))
         print("COPIED", os.path.basename(p))
+# 拷贝用到的法线贴图
+used_nrm = {s.get("normal") for o in objects for s in o["submeshes"] if s.get("normal")}
+for bn in used_nrm:
+    if bn in normal_paths:
+        shutil.copy(normal_paths[bn], os.path.join(OUT_DIR, bn))
+        print("COPIED NORMAL", bn)
 print("DONE")

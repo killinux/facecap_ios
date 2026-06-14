@@ -53,30 +53,62 @@ struct HeadPreviewView: UIViewRepresentable {
         private var maskEyeRight: SCNNode?
 
         init() {
-            scene.background.contents = UIColor(white: 0.18, alpha: 1)
+            scene.background.contents = Self.makeBackground()
 
             let camera = SCNCamera()
             camera.fieldOfView = 30
             camera.zNear = 0.01
+            // HDR + 色调映射：高光不溢出、暗部更通透，配合 PBR/IBL 出质感
+            camera.wantsHDR = true
+            camera.wantsExposureAdaptation = false
+            camera.exposureOffset = -0.3
+            camera.bloomThreshold = 0.9
+            camera.bloomIntensity = 0.22
+            camera.bloomBlurRadius = 8
             let cameraNode = SCNNode()
             cameraNode.camera = camera
             cameraNode.position = SCNVector3(0, 0, 0.55)
             scene.rootNode.addChildNode(cameraNode)
 
-            let keyLight = SCNLight()
-            keyLight.type = .directional
-            keyLight.intensity = 900
+            // 环境光（IBL）：上冷亮天光 / 下暖暗地面反光的柔和球形渐变，
+            // 给皮肤自然的环境补光与反射，替代生硬的平光 ambient。
+            scene.lightingEnvironment.contents = Self.makeEnvironment()
+            scene.lightingEnvironment.intensity = 1.5
+
+            // 三点布光：主光（暖，带柔自阴影做出鼻/唇立体）
+            let key = SCNLight()
+            key.type = .directional
+            key.intensity = 780
+            key.temperature = 5200
+            key.castsShadow = true
+            key.shadowMode = .forward
+            key.shadowRadius = 5
+            key.shadowSampleCount = 16
+            key.shadowColor = UIColor(white: 0, alpha: 0.32)
             let keyNode = SCNNode()
-            keyNode.light = keyLight
-            keyNode.eulerAngles = SCNVector3(-0.3, 0.25, 0)
+            keyNode.light = key
+            keyNode.eulerAngles = SCNVector3(-0.5, 0.5, 0)
             scene.rootNode.addChildNode(keyNode)
 
-            let ambient = SCNLight()
-            ambient.type = .ambient
-            ambient.intensity = 450
-            let ambientNode = SCNNode()
-            ambientNode.light = ambient
-            scene.rootNode.addChildNode(ambientNode)
+            // 补光（冷、弱、反向，柔化阴影、提暗部）
+            let fill = SCNLight()
+            fill.type = .directional
+            fill.intensity = 260
+            fill.temperature = 7200
+            let fillNode = SCNNode()
+            fillNode.light = fill
+            fillNode.eulerAngles = SCNVector3(-0.1, -0.7, 0)
+            scene.rootNode.addChildNode(fillNode)
+
+            // 轮廓光（后上方，勾亮发/脸边缘，把头从背景里分离）
+            let rim = SCNLight()
+            rim.type = .directional
+            rim.intensity = 620
+            rim.temperature = 6800
+            let rimNode = SCNNode()
+            rimNode.light = rim
+            rimNode.eulerAngles = SCNVector3(0.35, 3.0, 0)
+            scene.rootNode.addChildNode(rimNode)
 
             scene.rootNode.addChildNode(headNode)
         }
@@ -170,6 +202,37 @@ struct HeadPreviewView: UIViewRepresentable {
                 maskEyeLeft?.simdOrientation = frame.leftEyeRotation
                 maskEyeRight?.simdPosition = frame.rightEyePosition
                 maskEyeRight?.simdOrientation = frame.rightEyeRotation
+            }
+        }
+
+        // MARK: - 环境 / 背景渐变贴图
+
+        /// 球形环境贴图：上=冷亮天光、下=暖暗地面反光，给 PBR 皮肤自然的 IBL 补光与反射。
+        private static func makeEnvironment() -> UIImage {
+            let size = CGSize(width: 16, height: 256)
+            return UIGraphicsImageRenderer(size: size).image { ctx in
+                let colors = [
+                    UIColor(red: 0.62, green: 0.66, blue: 0.74, alpha: 1).cgColor,
+                    UIColor(white: 0.46, alpha: 1).cgColor,
+                    UIColor(red: 0.34, green: 0.30, blue: 0.27, alpha: 1).cgColor,
+                ]
+                let g = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                                   colors: colors as CFArray, locations: [0, 0.55, 1])!
+                ctx.cgContext.drawLinearGradient(
+                    g, start: .zero, end: CGPoint(x: 0, y: size.height), options: [])
+            }
+        }
+
+        /// 背景竖直渐变（上略亮下略暗），比纯色更有空间感。
+        private static func makeBackground() -> UIImage {
+            let size = CGSize(width: 4, height: 256)
+            return UIGraphicsImageRenderer(size: size).image { ctx in
+                let colors = [UIColor(white: 0.23, alpha: 1).cgColor,
+                              UIColor(white: 0.12, alpha: 1).cgColor]
+                let g = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                                   colors: colors as CFArray, locations: [0, 1])!
+                ctx.cgContext.drawLinearGradient(
+                    g, start: .zero, end: CGPoint(x: 0, y: size.height), options: [])
             }
         }
 

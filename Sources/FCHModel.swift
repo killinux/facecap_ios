@@ -32,6 +32,7 @@ enum FCHModel {
     private struct Submesh: Decodable {
         let name: String
         let texture: String?
+        let normal: String?   // 可选，旧 FCH 无此字段时解码为 nil
         let transparent: Bool
         let indices: BufferRef
     }
@@ -208,10 +209,23 @@ enum FCHModel {
             dataStride: perVector * 4)
     }
 
+    /// 按部位选粗糙度：眼球湿润高光、牙齿/口腔次之、头发哑光、皮肤带轻微光泽
+    /// （比原先一律 0.85 更有质感，配合 IBL/三点光更自然）。
+    private static func roughness(for name: String) -> CGFloat {
+        let n = name.lowercased()
+        if n.contains("eye"), !n.contains("lash"), !n.contains("brow"), !n.contains("shadow") {
+            return 0.16
+        }
+        if n.contains("teeth") || n.contains("tooth") || n.contains("歯") { return 0.30 }
+        if n.contains("mouth") || n.contains("tongue") || n.contains("舌") { return 0.42 }
+        if n.contains("hair") { return 0.72 }
+        return 0.58   // 皮肤
+    }
+
     private static func makeMaterial(submesh: Submesh, texturesDir: URL) -> SCNMaterial {
         let material = SCNMaterial()
         material.lightingModel = .physicallyBased
-        material.roughness.contents = 0.85
+        material.roughness.contents = roughness(for: submesh.name)
         material.metalness.contents = 0.0
         material.isDoubleSided = true
         // 口腔/舌头用 Genesis 8 的 UDIM 平铺 UV（u 可达 4~5，tile 1005）。SceneKit 默认
@@ -238,6 +252,14 @@ enum FCHModel {
             }
         } else {
             material.diffuse.contents = UIColor(white: 0.72, alpha: 1)
+        }
+        // 法线贴图（脸部 Face_N 等）：增加皮肤/唇/皱纹表面细节
+        if let normalName = submesh.normal,
+           let normalImage = UIImage(
+            contentsOfFile: texturesDir.appendingPathComponent(normalName).path) {
+            material.normal.contents = normalImage
+            material.normal.wrapS = .repeat
+            material.normal.wrapT = .repeat
         }
         if transparent {
             material.transparencyMode = .aOne
