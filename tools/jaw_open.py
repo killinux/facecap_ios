@@ -50,23 +50,24 @@ def open_score(delta, region):
     return -float(delta[region, 2].mean()) if region.sum() else 0.0
 
 
-def smooth_delta_in_region(delta, mesh, region, iters=20, lam=0.5):
-    """对 region 内顶点的位移场做受限拉普拉斯平滑（只在 region 内部求邻接平均）。
-    用途：填补下颌骨权重缺口造成的「漏网静止点」，region 外（上唇等）一点不动，
-    唇缝边界因被排除在 region 外而保持锐利。"""
+def fill_static_holes(delta, mesh, region, iters=15, lam=0.5):
+    """只填补 region 内「漏网静止点」——自身位移≈0、但被运动顶点包围的洞，从邻居向内
+    扩散填充。**绝不改动本来就运动正确的顶点**（嘴角/下巴等保持骨骼旋转的干净结果）。
+    这是关键：整片平滑会把嘴角运动顶点也搅乱、拉出尖刺；只填洞则两者兼得。"""
     ne = len(mesh.data.edges)
     ev = np.empty(ne * 2, dtype=np.int64)
     mesh.data.edges.foreach_get("vertices", ev)
     ev = ev.reshape(-1, 2)
-    keep = region[ev[:, 0]] & region[ev[:, 1]]
+    keep = region[ev[:, 0]] & region[ev[:, 1]]    # 只在 region 内邻接（不跨唇缝）
     ea, eb = ev[keep, 0], ev[keep, 1]
+    fill = region & (np.linalg.norm(delta, axis=1) < 0.001)   # 待填的静止洞
     d = delta.copy()
     for _ in range(iters):
         acc = np.zeros_like(d)
         cnt = np.zeros(len(d))
         np.add.at(acc, ea, d[eb]); np.add.at(cnt, ea, 1.0)
         np.add.at(acc, eb, d[ea]); np.add.at(cnt, eb, 1.0)
-        upd = region & (cnt > 0)
+        upd = fill & (cnt > 0)                     # 只更新洞，运动顶点原样不动
         d[upd] = (1 - lam) * d[upd] + lam * (acc[upd] / cnt[upd, None])
     return d
 
@@ -145,7 +146,7 @@ def build_jaw_open(*, arm, mesh, basis, capture, zero_all, eye_z, neck_z,
                  & (basis[:, 1] < np.percentile(basis[:, 1], 25))
                  & (np.abs(basis[:, 0]) < 0.06))
     n_static = int((mouth_box & (np.linalg.norm(jd, axis=1) < 0.002)).sum())
-    jd = smooth_delta_in_region(jd, mesh, mouth_box, iters=20, lam=0.5)
+    jd = fill_static_holes(jd, mesh, mouth_box, iters=15, lam=0.5)
 
     # 归一化满 weight 张嘴幅度，跨模型一致（下颌为主，先归一化再叠加上唇抬升）
     mx = float(np.linalg.norm(jd, axis=1).max()) * 1000
